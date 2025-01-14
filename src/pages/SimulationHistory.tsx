@@ -43,7 +43,7 @@ function EarlyPaymentModal({ onClose, onConfirm, simulation, initialPayment = nu
 }) {
   const [date, setDate] = useState(initialPayment?.date || '');
   const [amount, setAmount] = useState(initialPayment ? String(initialPayment.amount * 100) : '');
-  const [reduceInstallment, setReduceInstallment] = useState(initialPayment?.reduceInstallment ?? false);
+  const [reduceInstallment, setReduceInstallment] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +53,7 @@ function EarlyPaymentModal({ onClose, onConfirm, simulation, initialPayment = nu
       id: initialPayment?.id || String(Date.now()),
       date,
       amount: Number(amount) / 100,
-      reduceInstallment
+      reduceInstallment: false
     });
     onClose();
   };
@@ -72,21 +72,7 @@ function EarlyPaymentModal({ onClose, onConfirm, simulation, initialPayment = nu
     setAmount(rawValue);
   };
 
-  const getCurrentBalance = () => {
-    if (!date) return simulation.installments[0].balance;
-    
-    const paymentDate = new Date(date);
-    let previousInstallment = simulation.installments[0];
-    
-    for (const installment of simulation.installments) {
-      const installmentDate = new Date(installment.date.split('/').reverse().join('-'));
-      if (installmentDate > paymentDate) {
-        return previousInstallment.balance;
-      }
-      previousInstallment = installment;
-    }
-    return previousInstallment.balance;
-  };
+  const totalBalance = simulation.installments[0].balance;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -120,31 +106,9 @@ function EarlyPaymentModal({ onClose, onConfirm, simulation, initialPayment = nu
               placeholder="R$ 0,00"
             />
             <p className="text-sm text-gray-500 mt-1">
-              Saldo devedor atual: {formatCurrency(String(getCurrentBalance() * 100))}
+              Saldo devedor total: {formatCurrency(String(totalBalance * 100))}
             </p>
           </div>
-          {simulation.type === 'SAC' && (
-            <div>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  checked={reduceInstallment}
-                  onChange={() => setReduceInstallment(true)}
-                  className="text-blue-600"
-                />
-                <span className="text-sm text-gray-700">Reduzir valor das parcelas</span>
-              </label>
-              <label className="flex items-center space-x-2 mt-2">
-                <input
-                  type="radio"
-                  checked={!reduceInstallment}
-                  onChange={() => setReduceInstallment(false)}
-                  className="text-blue-600"
-                />
-                <span className="text-sm text-gray-700">Reduzir prazo</span>
-              </label>
-            </div>
-          )}
           <div className="flex justify-end space-x-2 pt-4">
             <button
               type="button"
@@ -216,69 +180,43 @@ function SimulationModal({ simulation: initialSimulation, onClose, onUpdate }: {
       const remainingInstallments = newInstallments.slice(paymentIndex + 1);
       let balance = newBalance;
 
-      if (simulation.type === 'SAC' && payment.reduceInstallment) {
-        const amortization = balance / remainingInstallments.length;
-        
-        for (let i = 0; i < remainingInstallments.length; i++) {
-          const interest = balance * monthlyRate;
-          const payment = amortization + interest;
-          
-          newInstallments[paymentIndex + 1 + i] = {
-            number: i + 1,
-            date: remainingInstallments[i].date,
-            payment,
-            amortization,
-            interest,
-            balance: balance - amortization
-          };
+      const originalPayment = remainingInstallments[0].payment;
+      let remainingPayments = [];
 
-          balance -= amortization;
-        }
-      } else {
-        const originalPayment = remainingInstallments[0].payment;
-        let remainingPayments = [];
+      while (balance > 0) {
+        const interest = balance * monthlyRate;
+        const amortization = originalPayment - interest;
 
-        while (balance > 0) {
-          const interest = balance * monthlyRate;
-          const amortization = simulation.type === 'SAC' 
-            ? balance / remainingInstallments.length 
-            : originalPayment - interest;
-
-          if (balance <= amortization) {
-            const finalPayment = balance * (1 + monthlyRate);
-            remainingPayments.push({
-              payment: finalPayment,
-              amortization: balance,
-              interest: balance * monthlyRate,
-              balance: 0
-            });
-            break;
-          }
-
-          const payment = simulation.type === 'SAC' 
-            ? amortization + interest 
-            : originalPayment;
-
+        if (balance <= amortization) {
+          const finalPayment = balance * (1 + monthlyRate);
           remainingPayments.push({
-            payment,
-            amortization,
-            interest,
-            balance: balance - amortization
+            payment: finalPayment,
+            amortization: balance,
+            interest: balance * monthlyRate,
+            balance: 0
           });
-
-          balance -= amortization;
+          break;
         }
 
-        newInstallments = [
-          ...newInstallments.slice(0, paymentIndex + 1),
-          ...remainingPayments.map((payment, idx) => ({
-            number: paymentIndex + 1 + idx,
-            date: new Date(paymentDate.setMonth(paymentDate.getMonth() + idx + 1))
-              .toLocaleDateString('pt-BR'),
-            ...payment
-          }))
-        ];
+        remainingPayments.push({
+          payment: originalPayment,
+          amortization,
+          interest,
+          balance: balance - amortization
+        });
+
+        balance -= amortization;
       }
+
+      newInstallments = [
+        ...newInstallments.slice(0, paymentIndex + 1),
+        ...remainingPayments.map((payment, idx) => ({
+          number: paymentIndex + 1 + idx,
+          date: new Date(paymentDate.setMonth(paymentDate.getMonth() + idx + 1))
+            .toLocaleDateString('pt-BR'),
+          ...payment
+        }))
+      ];
     }
 
     let normalInstallmentNumber = 1;
@@ -445,7 +383,6 @@ function SimulationModal({ simulation: initialSimulation, onClose, onUpdate }: {
                     <div className="flex items-center gap-4">
                       <span className="font-medium text-green-600">
                         {formatCurrency(payment.amount)}
-                        {simulation.type === 'SAC' && (payment.reduceInstallment ? ' (Redução de parcela)' : ' (Redução de prazo)')}
                       </span>
                       <button
                         onClick={() => handleEditPayment(payment)}
