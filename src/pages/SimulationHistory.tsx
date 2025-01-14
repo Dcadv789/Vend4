@@ -43,7 +43,7 @@ function EarlyPaymentModal({ onClose, onConfirm, simulation, initialPayment = nu
 }) {
   const [date, setDate] = useState(initialPayment?.date || '');
   const [amount, setAmount] = useState(initialPayment ? String(initialPayment.amount * 100) : '');
-  const [reduceInstallment, setReduceInstallment] = useState(initialPayment?.reduceInstallment ?? true);
+  const [reduceInstallment, setReduceInstallment] = useState(initialPayment?.reduceInstallment ?? false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +72,6 @@ function EarlyPaymentModal({ onClose, onConfirm, simulation, initialPayment = nu
     setAmount(rawValue);
   };
 
-  // Encontra o saldo devedor atual baseado na data selecionada
   const getCurrentBalance = () => {
     if (!date) return simulation.installments[0].balance;
     
@@ -124,26 +123,28 @@ function EarlyPaymentModal({ onClose, onConfirm, simulation, initialPayment = nu
               Saldo devedor atual: {formatCurrency(String(getCurrentBalance() * 100))}
             </p>
           </div>
-          <div>
-            <label className="flex items-center space-x-2">
-              <input
-                type="radio"
-                checked={reduceInstallment}
-                onChange={() => setReduceInstallment(true)}
-                className="text-blue-600"
-              />
-              <span className="text-sm text-gray-700">Reduzir valor das parcelas</span>
-            </label>
-            <label className="flex items-center space-x-2 mt-2">
-              <input
-                type="radio"
-                checked={!reduceInstallment}
-                onChange={() => setReduceInstallment(false)}
-                className="text-blue-600"
-              />
-              <span className="text-sm text-gray-700">Reduzir prazo</span>
-            </label>
-          </div>
+          {simulation.type === 'SAC' && (
+            <div>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  checked={reduceInstallment}
+                  onChange={() => setReduceInstallment(true)}
+                  className="text-blue-600"
+                />
+                <span className="text-sm text-gray-700">Reduzir valor das parcelas</span>
+              </label>
+              <label className="flex items-center space-x-2 mt-2">
+                <input
+                  type="radio"
+                  checked={!reduceInstallment}
+                  onChange={() => setReduceInstallment(false)}
+                  className="text-blue-600"
+                />
+                <span className="text-sm text-gray-700">Reduzir prazo</span>
+              </label>
+            </div>
+          )}
           <div className="flex justify-end space-x-2 pt-4">
             <button
               type="button"
@@ -187,26 +188,22 @@ function SimulationModal({ simulation: initialSimulation, onClose, onUpdate }: {
     const monthlyRate = simulation.monthlyRate / 100;
     let newInstallments = [...initialSimulation.installments];
     
-    // Ordena os pagamentos por data
     payments.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     for (const payment of payments) {
       const paymentDate = new Date(payment.date);
       
-      // Encontra o índice da parcela onde o pagamento será inserido
       let paymentIndex = newInstallments.findIndex(inst => 
         new Date(inst.date.split('/').reverse().join('-')) > paymentDate
       );
 
       if (paymentIndex === -1) continue;
 
-      // Encontra o saldo devedor atual
       const currentBalance = newInstallments[paymentIndex - 1]?.balance || initialSimulation.financingAmount;
       const newBalance = currentBalance - payment.amount;
 
-      // Insere o pagamento antecipado como uma nova parcela
       const paymentInstallment: Installment = {
-        number: -1, // Número especial para identificar pagamento antecipado
+        number: -1,
         date: paymentDate.toLocaleDateString('pt-BR'),
         payment: payment.amount,
         amortization: payment.amount,
@@ -216,52 +213,40 @@ function SimulationModal({ simulation: initialSimulation, onClose, onUpdate }: {
 
       newInstallments.splice(paymentIndex, 0, paymentInstallment);
 
-      // Recalcula as parcelas restantes
       const remainingInstallments = newInstallments.slice(paymentIndex + 1);
       let balance = newBalance;
 
-      if (payment.reduceInstallment) {
-        // Mantém o valor das parcelas originais
+      if (simulation.type === 'SAC' && payment.reduceInstallment) {
+        const amortization = balance / remainingInstallments.length;
+        
         for (let i = 0; i < remainingInstallments.length; i++) {
-          const originalPayment = remainingInstallments[i].payment;
           const interest = balance * monthlyRate;
-          const amortization = originalPayment - interest;
+          const payment = amortization + interest;
           
-          if (balance < amortization) {
-            // Remove parcelas restantes se o saldo for menor que a amortização
-            newInstallments = newInstallments.slice(0, paymentIndex + 1 + i);
-            break;
-          }
-
           newInstallments[paymentIndex + 1 + i] = {
-            ...remainingInstallments[i],
-            payment: originalPayment,
-            amortization: amortization,
-            interest: interest,
+            number: i + 1,
+            date: remainingInstallments[i].date,
+            payment,
+            amortization,
+            interest,
             balance: balance - amortization
           };
 
           balance -= amortization;
         }
       } else {
-        // Mantém o valor das parcelas e reduz o prazo
         const originalPayment = remainingInstallments[0].payment;
-        const numRemainingInstallments = Math.ceil(balance / (originalPayment - (balance * monthlyRate)));
-        
-        // Remove as parcelas excedentes
-        newInstallments = newInstallments.slice(0, paymentIndex + 1);
+        let remainingPayments = [];
 
-        for (let i = 0; i < numRemainingInstallments && balance > 0; i++) {
+        while (balance > 0) {
           const interest = balance * monthlyRate;
-          const amortization = originalPayment - interest;
-          
-          if (balance < amortization) {
-            // Última parcela ajustada ao saldo restante
+          const amortization = simulation.type === 'SAC' 
+            ? balance / remainingInstallments.length 
+            : originalPayment - interest;
+
+          if (balance <= amortization) {
             const finalPayment = balance * (1 + monthlyRate);
-            newInstallments.push({
-              number: newInstallments.length + 1,
-              date: new Date(paymentDate.setMonth(paymentDate.getMonth() + i + 1))
-                .toLocaleDateString('pt-BR'),
+            remainingPayments.push({
               payment: finalPayment,
               amortization: balance,
               interest: balance * monthlyRate,
@@ -270,22 +255,32 @@ function SimulationModal({ simulation: initialSimulation, onClose, onUpdate }: {
             break;
           }
 
-          newInstallments.push({
-            number: newInstallments.length + 1,
-            date: new Date(paymentDate.setMonth(paymentDate.getMonth() + i + 1))
-              .toLocaleDateString('pt-BR'),
-            payment: originalPayment,
-            amortization: amortization,
-            interest: interest,
+          const payment = simulation.type === 'SAC' 
+            ? amortization + interest 
+            : originalPayment;
+
+          remainingPayments.push({
+            payment,
+            amortization,
+            interest,
             balance: balance - amortization
           });
 
           balance -= amortization;
         }
+
+        newInstallments = [
+          ...newInstallments.slice(0, paymentIndex + 1),
+          ...remainingPayments.map((payment, idx) => ({
+            number: paymentIndex + 1 + idx,
+            date: new Date(paymentDate.setMonth(paymentDate.getMonth() + idx + 1))
+              .toLocaleDateString('pt-BR'),
+            ...payment
+          }))
+        ];
       }
     }
 
-    // Renumera as parcelas normais (excluindo pagamentos antecipados)
     let normalInstallmentNumber = 1;
     newInstallments = newInstallments.map(inst => ({
       ...inst,
@@ -450,7 +445,7 @@ function SimulationModal({ simulation: initialSimulation, onClose, onUpdate }: {
                     <div className="flex items-center gap-4">
                       <span className="font-medium text-green-600">
                         {formatCurrency(payment.amount)}
-                        {payment.reduceInstallment ? ' (Redução de parcela)' : ' (Redução de prazo)'}
+                        {simulation.type === 'SAC' && (payment.reduceInstallment ? ' (Redução de parcela)' : ' (Redução de prazo)')}
                       </span>
                       <button
                         onClick={() => handleEditPayment(payment)}
@@ -716,8 +711,7 @@ export default function SimulationHistory() {
                     {simulation.date}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      simulation.type === 'SAC' 
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${                      simulation.type === 'SAC' 
                         ? 'bg-green-100 text-green-800'
                         : 'bg-blue-100 text-blue-800'
                     }`}>
