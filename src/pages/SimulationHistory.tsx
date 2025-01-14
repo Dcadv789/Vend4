@@ -77,13 +77,16 @@ function EarlyPaymentModal({ onClose, onConfirm, simulation, initialPayment = nu
     if (!date) return simulation.installments[0].balance;
     
     const paymentDate = new Date(date);
+    let previousInstallment = simulation.installments[0];
+    
     for (const installment of simulation.installments) {
       const installmentDate = new Date(installment.date.split('/').reverse().join('-'));
       if (installmentDate > paymentDate) {
-        return installment.balance;
+        return previousInstallment.balance;
       }
+      previousInstallment = installment;
     }
-    return simulation.installments[simulation.installments.length - 1].balance;
+    return previousInstallment.balance;
   };
 
   return (
@@ -197,10 +200,11 @@ function SimulationModal({ simulation: initialSimulation, onClose, onUpdate }: {
 
       if (paymentIndex === -1) continue;
 
-      // Insere o pagamento antecipado como uma nova parcela
+      // Encontra o saldo devedor atual
       const currentBalance = newInstallments[paymentIndex - 1]?.balance || initialSimulation.financingAmount;
       const newBalance = currentBalance - payment.amount;
 
+      // Insere o pagamento antecipado como uma nova parcela
       const paymentInstallment: Installment = {
         number: -1, // Número especial para identificar pagamento antecipado
         date: paymentDate.toLocaleDateString('pt-BR'),
@@ -217,17 +221,21 @@ function SimulationModal({ simulation: initialSimulation, onClose, onUpdate }: {
       let balance = newBalance;
 
       if (payment.reduceInstallment) {
-        // Reduz o valor das parcelas mantendo o prazo
-        const numInstallments = remainingInstallments.length;
-        const amortization = balance / numInstallments;
-
-        for (let i = 0; i < numInstallments; i++) {
+        // Mantém o valor das parcelas originais
+        for (let i = 0; i < remainingInstallments.length; i++) {
+          const originalPayment = remainingInstallments[i].payment;
           const interest = balance * monthlyRate;
-          const installmentPayment = amortization + interest;
+          const amortization = originalPayment - interest;
           
+          if (balance < amortization) {
+            // Remove parcelas restantes se o saldo for menor que a amortização
+            newInstallments = newInstallments.slice(0, paymentIndex + 1 + i);
+            break;
+          }
+
           newInstallments[paymentIndex + 1 + i] = {
             ...remainingInstallments[i],
-            payment: installmentPayment,
+            payment: originalPayment,
             amortization: amortization,
             interest: interest,
             balance: balance - amortization
@@ -237,29 +245,42 @@ function SimulationModal({ simulation: initialSimulation, onClose, onUpdate }: {
         }
       } else {
         // Mantém o valor das parcelas e reduz o prazo
-        const originalAmortization = remainingInstallments[0].amortization;
-        const numRemainingInstallments = Math.ceil(balance / originalAmortization);
+        const originalPayment = remainingInstallments[0].payment;
+        const numRemainingInstallments = Math.ceil(balance / (originalPayment - (balance * monthlyRate)));
         
         // Remove as parcelas excedentes
         newInstallments = newInstallments.slice(0, paymentIndex + 1);
 
-        for (let i = 0; i < numRemainingInstallments; i++) {
+        for (let i = 0; i < numRemainingInstallments && balance > 0; i++) {
           const interest = balance * monthlyRate;
-          const installmentPayment = originalAmortization + interest;
+          const amortization = originalPayment - interest;
           
-          const nextDate = new Date(paymentDate);
-          nextDate.setMonth(paymentDate.getMonth() + i + 1);
+          if (balance < amortization) {
+            // Última parcela ajustada ao saldo restante
+            const finalPayment = balance * (1 + monthlyRate);
+            newInstallments.push({
+              number: newInstallments.length + 1,
+              date: new Date(paymentDate.setMonth(paymentDate.getMonth() + i + 1))
+                .toLocaleDateString('pt-BR'),
+              payment: finalPayment,
+              amortization: balance,
+              interest: balance * monthlyRate,
+              balance: 0
+            });
+            break;
+          }
 
           newInstallments.push({
             number: newInstallments.length + 1,
-            date: nextDate.toLocaleDateString('pt-BR'),
-            payment: installmentPayment,
-            amortization: originalAmortization,
+            date: new Date(paymentDate.setMonth(paymentDate.getMonth() + i + 1))
+              .toLocaleDateString('pt-BR'),
+            payment: originalPayment,
+            amortization: amortization,
             interest: interest,
-            balance: balance - originalAmortization
+            balance: balance - amortization
           });
 
-          balance -= originalAmortization;
+          balance -= amortization;
         }
       }
     }
@@ -698,7 +719,7 @@ export default function SimulationHistory() {
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       simulation.type === 'SAC' 
                         ? 'bg-green-100 text-green-800'
-                        : 'bg-blue- 100 text-blue-800'
+                        : 'bg-blue-100 text-blue-800'
                     }`}>
                       {simulation.type}
                     </span>
