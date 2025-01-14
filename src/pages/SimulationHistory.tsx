@@ -177,46 +177,78 @@ function SimulationModal({ simulation: initialSimulation, onClose, onUpdate }: {
 
       newInstallments.splice(paymentIndex, 0, paymentInstallment);
 
-      const remainingInstallments = newInstallments.slice(paymentIndex + 1);
-      let balance = newBalance;
+      // Recalcular parcelas restantes mantendo o padrão SAC
+      if (simulation.type === 'SAC') {
+        const remainingMonths = newInstallments.length - paymentIndex - 1;
+        if (remainingMonths > 0) {
+          const constantAmortization = newBalance / remainingMonths;
+          let balance = newBalance;
 
-      const originalPayment = remainingInstallments[0].payment;
-      let remainingPayments = [];
+          const remainingInstallments = Array.from({ length: remainingMonths }, (_, idx) => {
+            const interest = balance * monthlyRate;
+            const payment = constantAmortization + interest;
+            balance -= constantAmortization;
 
-      while (balance > 0) {
-        const interest = balance * monthlyRate;
-        const amortization = originalPayment - interest;
+            const date = new Date(paymentDate);
+            date.setMonth(paymentDate.getMonth() + idx + 1);
 
-        if (balance <= amortization) {
-          const finalPayment = balance * (1 + monthlyRate);
-          remainingPayments.push({
-            payment: finalPayment,
-            amortization: balance,
-            interest: balance * monthlyRate,
-            balance: 0
+            return {
+              number: paymentIndex + 1 + idx,
+              date: date.toLocaleDateString('pt-BR'),
+              payment,
+              amortization: constantAmortization,
+              interest,
+              balance
+            };
           });
-          break;
+
+          newInstallments = [
+            ...newInstallments.slice(0, paymentIndex + 1),
+            ...remainingInstallments
+          ];
+        }
+      } else {
+        // Manter o código original para PRICE
+        const remainingInstallments = newInstallments.slice(paymentIndex + 1);
+        const originalPayment = remainingInstallments[0].payment;
+        let balance = newBalance;
+        let remainingPayments = [];
+
+        while (balance > 0) {
+          const interest = balance * monthlyRate;
+          const amortization = originalPayment - interest;
+
+          if (balance <= amortization) {
+            const finalPayment = balance * (1 + monthlyRate);
+            remainingPayments.push({
+              payment: finalPayment,
+              amortization: balance,
+              interest: balance * monthlyRate,
+              balance: 0
+            });
+            break;
+          }
+
+          remainingPayments.push({
+            payment: originalPayment,
+            amortization,
+            interest,
+            balance: balance - amortization
+          });
+
+          balance -= amortization;
         }
 
-        remainingPayments.push({
-          payment: originalPayment,
-          amortization,
-          interest,
-          balance: balance - amortization
-        });
-
-        balance -= amortization;
+        newInstallments = [
+          ...newInstallments.slice(0, paymentIndex + 1),
+          ...remainingPayments.map((payment, idx) => ({
+            number: paymentIndex + 1 + idx,
+            date: new Date(paymentDate.setMonth(paymentDate.getMonth() + idx + 1))
+              .toLocaleDateString('pt-BR'),
+            ...payment
+          }))
+        ];
       }
-
-      newInstallments = [
-        ...newInstallments.slice(0, paymentIndex + 1),
-        ...remainingPayments.map((payment, idx) => ({
-          number: paymentIndex + 1 + idx,
-          date: new Date(paymentDate.setMonth(paymentDate.getMonth() + idx + 1))
-            .toLocaleDateString('pt-BR'),
-          ...payment
-        }))
-      ];
     }
 
     let normalInstallmentNumber = 1;
@@ -670,7 +702,7 @@ export default function SimulationHistory() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {simulation.monthlyRate}%
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray- 900">
                     {formatCurrency(simulation.totalAmount)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
