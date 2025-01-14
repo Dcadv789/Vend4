@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { History, Trash2, Eye, EyeOff, Plus, Edit2 } from 'lucide-react';
+import { Notification } from '../components/Notification';
 
 interface SavedSimulation {
   id: string;
@@ -32,32 +33,6 @@ interface EarlyPayment {
   date: string;
   amount: number;
   reduceInstallment: boolean;
-}
-
-interface NotificationProps {
-  message: string;
-  onClose: () => void;
-}
-
-function Notification({ message, onClose }: NotificationProps) {
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      onClose();
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, [onClose]);
-
-  return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4 transform transition-all animate-fade-in">
-        <div className="flex items-center justify-center space-x-2">
-          <div className="w-4 h-4 rounded-full bg-green-500 animate-pulse"></div>
-          <p className="text-gray-800 font-medium">{message}</p>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 function EarlyPaymentModal({ onClose, onConfirm, currentBalance, initialPayment = null }: { 
@@ -191,48 +166,54 @@ function SimulationModal({ simulation: initialSimulation, onClose, onUpdate }: {
     });
   };
 
-  const findCurrentBalance = (date: string, installments: Installment[]) => {
+  const findCurrentBalance = (date: string) => {
     const paymentDate = new Date(date);
-    for (const installment of installments) {
+    const originalInstallments = [...initialSimulation.installments];
+    
+    for (const installment of originalInstallments) {
       const installmentDate = new Date(installment.date.split('/').reverse().join('-'));
       if (installmentDate > paymentDate) {
         return installment.balance;
       }
     }
-    return installments[installments.length - 1].balance;
+    return originalInstallments[originalInstallments.length - 1].balance;
   };
 
   const recalculateInstallments = (payments: EarlyPayment[]) => {
-    let newInstallments = [...initialSimulation.installments];
     const monthlyRate = simulation.monthlyRate / 100;
-
+    let newInstallments = [...initialSimulation.installments];
+    
     payments.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     for (const payment of payments) {
       const paymentDate = new Date(payment.date);
-      const affectedInstallments = newInstallments.filter(
+      let remainingInstallments = newInstallments.filter(
         inst => new Date(inst.date.split('/').reverse().join('-')) > paymentDate
       );
 
-      if (affectedInstallments.length === 0) continue;
+      if (remainingInstallments.length === 0) continue;
 
-      let currentBalance = findCurrentBalance(payment.date, newInstallments);
+      let currentBalance = findCurrentBalance(payment.date);
       currentBalance -= payment.amount;
 
       if (payment.reduceInstallment) {
-        const remainingInstallments = affectedInstallments.length;
-        for (let i = 0; i < remainingInstallments; i++) {
-          const interest = currentBalance * monthlyRate;
-          const amortization = currentBalance / (remainingInstallments - i);
-          const installmentPayment = interest + amortization;
+        const numInstallments = remainingInstallments.length;
+        const amortization = currentBalance / numInstallments;
 
-          const installmentIndex = newInstallments.findIndex(inst => inst === affectedInstallments[i]);
+        for (let i = 0; i < numInstallments; i++) {
+          const interest = currentBalance * monthlyRate;
+          const installmentPayment = amortization + interest;
+          
+          const installmentIndex = newInstallments.findIndex(
+            inst => inst.number === remainingInstallments[i].number
+          );
+
           if (installmentIndex !== -1) {
             newInstallments[installmentIndex] = {
               ...newInstallments[installmentIndex],
               payment: installmentPayment,
-              interest: interest,
               amortization: amortization,
+              interest: interest,
               balance: currentBalance - amortization
             };
           }
@@ -240,31 +221,30 @@ function SimulationModal({ simulation: initialSimulation, onClose, onUpdate }: {
           currentBalance -= amortization;
         }
       } else {
-        const amortization = affectedInstallments[0].amortization;
-        const newRemainingInstallments = Math.ceil(currentBalance / amortization);
-        const startIndex = newInstallments.findIndex(inst => inst === affectedInstallments[0]);
+        const amortizationPerMonth = remainingInstallments[0].amortization;
+        const numRemainingInstallments = Math.ceil(currentBalance / amortizationPerMonth);
         
-        newInstallments = newInstallments.slice(0, startIndex + newRemainingInstallments);
+        newInstallments = newInstallments.filter(
+          inst => new Date(inst.date.split('/').reverse().join('-')) <= paymentDate
+        );
 
-        for (let i = 0; i < newRemainingInstallments; i++) {
+        for (let i = 0; i < numRemainingInstallments; i++) {
           const interest = currentBalance * monthlyRate;
-          const installmentPayment = interest + amortization;
+          const installmentPayment = amortizationPerMonth + interest;
+          
+          const nextDate = new Date(paymentDate);
+          nextDate.setMonth(paymentDate.getMonth() + i + 1);
 
-          const installmentDate = new Date(paymentDate);
-          installmentDate.setMonth(paymentDate.getMonth() + i + 1);
+          newInstallments.push({
+            number: newInstallments.length + 1,
+            date: nextDate.toLocaleDateString('pt-BR'),
+            payment: installmentPayment,
+            amortization: amortizationPerMonth,
+            interest: interest,
+            balance: currentBalance - amortizationPerMonth
+          });
 
-          if (startIndex + i < newInstallments.length) {
-            newInstallments[startIndex + i] = {
-              number: i + 1,
-              date: installmentDate.toLocaleDateString('pt-BR'),
-              payment: installmentPayment,
-              amortization,
-              interest,
-              balance: currentBalance - amortization
-            };
-          }
-
-          currentBalance -= amortization;
+          currentBalance -= amortizationPerMonth;
         }
       }
     }
@@ -284,6 +264,7 @@ function SimulationModal({ simulation: initialSimulation, onClose, onUpdate }: {
     }
 
     const newInstallments = recalculateInstallments(updatedPayments);
+    
     const updatedSimulation = {
       ...simulation,
       installments: newInstallments,
@@ -542,8 +523,7 @@ function SimulationModal({ simulation: initialSimulation, onClose, onUpdate }: {
             }}
             onConfirm={handleEarlyPayment}
             currentBalance={findCurrentBalance(
-              editingPayment?.date || new Date().toISOString(),
-              simulation.installments
+              editingPayment?.date || new Date().toISOString()
             )}
             initialPayment={editingPayment}
           />
@@ -552,8 +532,6 @@ function SimulationModal({ simulation: initialSimulation, onClose, onUpdate }: {
     </div>
   );
 }
-
-type FilterType = 'ALL' | 'SAC' | 'PRICE';
 
 export default function SimulationHistory() {
   const [simulations, setSimulations] = React.useState<SavedSimulation[]>([]);
@@ -699,7 +677,7 @@ export default function SimulationHistory() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       simulation.type === 'SAC' 
-                        ? 'bg -green-100 text-green-800'
+                        ? 'bg-green-100 text-green-800'
                         : 'bg-blue-100 text-blue-800'
                     }`}>
                       {simulation.type}
@@ -720,7 +698,7 @@ export default function SimulationHistory() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {simulation.monthlyRate}%
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace- nowrap text-sm text-gray-900">
                     {formatCurrency(simulation.totalAmount)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
