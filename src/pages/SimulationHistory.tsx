@@ -72,6 +72,8 @@ function EarlyPaymentModal({ onClose, onConfirm, simulation, initialPayment = nu
     setAmount(rawValue);
   };
 
+  const financedAmount = simulation.financingAmount - simulation.downPayment;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 max-w-md w-full">
@@ -104,7 +106,7 @@ function EarlyPaymentModal({ onClose, onConfirm, simulation, initialPayment = nu
               placeholder="R$ 0,00"
             />
             <p className="text-sm text-gray-500 mt-1">
-              Saldo devedor total: {formatCurrency(String(simulation.financingAmount * 100))}
+              Saldo devedor total: {formatCurrency(String(financedAmount * 100))}
             </p>
           </div>
           <div className="flex justify-end space-x-2 pt-4">
@@ -161,7 +163,7 @@ function SimulationModal({ simulation: initialSimulation, onClose, onUpdate }: {
 
       if (paymentIndex === -1) continue;
 
-      const currentBalance = newInstallments[paymentIndex - 1]?.balance || initialSimulation.financingAmount;
+      const currentBalance = newInstallments[paymentIndex - 1]?.balance || (initialSimulation.financingAmount - initialSimulation.downPayment);
       const newBalance = currentBalance - payment.amount;
 
       const paymentInstallment: Installment = {
