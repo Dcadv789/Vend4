@@ -21,8 +21,8 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
     <div className="space-y-2">
       <div className="border border-gray-200 rounded-lg p-2">
         <div className="flex items-center">
-          <label className="w-3/5 text-sm font-medium text-gray-700 truncate pr-2">
-            Custos de Vendas
+          <label className="w-3/5 text-sm font-medium text-gray-700 truncate pr-2 pl-2">
+            Custo da Mercadoria
           </label>
           <div className="w-2/5">
             <NumberInput
@@ -38,7 +38,7 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
 
       <div className="border border-gray-200 rounded-lg p-2">
         <div className="flex items-center">
-          <label className="w-3/5 text-sm font-medium text-gray-700 truncate pr-2">
+          <label className="w-3/5 text-sm font-medium text-gray-700 truncate pr-2 pl-2">
             Impostos
           </label>
           <div className="w-2/5">
@@ -55,7 +55,7 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
 
       <div className="border border-gray-200 rounded-lg p-2">
         <div className="flex items-center">
-          <label className="w-3/5 text-sm font-medium text-gray-700 truncate pr-2">
+          <label className="w-3/5 text-sm font-medium text-gray-700 truncate pr-2 pl-2">
             Taxas de Cartão
           </label>
           <div className="w-2/5">
@@ -72,7 +72,7 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
 
       <div className="border border-gray-200 rounded-lg p-2">
         <div className="flex items-center">
-          <label className="w-3/5 text-sm font-medium text-gray-700 truncate pr-2">
+          <label className="w-3/5 text-sm font-medium text-gray-700 truncate pr-2 pl-2">
             Devoluções
           </label>
           <div className="w-2/5">
@@ -89,7 +89,7 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
 
       <div className="border border-gray-200 rounded-lg p-2">
         <div className="flex items-center">
-          <label className="w-3/5 text-sm font-medium text-gray-700 truncate pr-2">
+          <label className="w-3/5 text-sm font-medium text-gray-700 truncate pr-2 pl-2">
             Comissões
           </label>
           <div className="w-2/5">
@@ -106,7 +106,7 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
 
       <div className="border border-gray-200 rounded-lg p-2">
         <div className="flex items-center">
-          <label className="w-3/5 text-sm font-medium text-gray-700 truncate pr-2">
+          <label className="w-3/5 text-sm font-medium text-gray-700 truncate pr-2 pl-2">
             Outros Custos
           </label>
           <div className="w-2/5">
@@ -122,8 +122,8 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
       </div>
 
       <div className="pt-2 border-t border-gray-200">
-        <p className="text-lg font-semibold text-gray-900">
-          Total: {formatPercentage(totalCosts)}
+        <p className="text-lg font-semibold text-gray-900 px-2">
+          Total: {(totalCosts / 100).toFixed(2)}%
         </p>
       </div>
     </div>

@@ -39,11 +39,15 @@ export default function ProLabore() {
 
   const calculateResults = () => {
     const totalRevenue = Object.values(revenue).reduce((a, b) => a + b, 0);
+    // Agora os custos variáveis já estão em percentual (75 = 75%), então dividimos por 100
     const totalVariableCosts = Object.values(variableCosts).reduce((a, b) => a + b, 0) / 100;
     const totalFixedCosts = fixedCosts.monthly;
 
-    const preliminaryCalculation = totalRevenue * (1 - totalVariableCosts) - totalFixedCosts;
-    const maximumRecommended = preliminaryCalculation * 0.3;
+    // Fórmula: Pró-labore Máx = (Faturamento × (1 - Taxa)) - Custos Fixos
+    const maximumRecommended = (totalRevenue * (1 - totalVariableCosts)) - totalFixedCosts;
+    
+    // O cálculo preliminar agora é baseado no mesmo princípio
+    const preliminaryCalculation = maximumRecommended;
 
     return {
       preliminaryCalculation,

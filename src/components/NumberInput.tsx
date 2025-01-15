@@ -38,7 +38,7 @@ export const NumberInput: React.FC<NumberInputProps> = ({
   };
 
   const formatPercentage = (value: number): string => {
-    return (value / 100).toLocaleString('pt-BR', {
+    return value.toLocaleString('pt-BR', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
@@ -54,13 +54,14 @@ export const NumberInput: React.FC<NumberInputProps> = ({
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let newValue = e.target.value.replace(/[^\d]/g, '');
+    let newValue = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
     
     if (format === 'currency') {
-      const numericValue = Number(newValue) / 100;
+      const numericValue = Number(newValue);
       onChange(numericValue);
       setDisplayValue(formatCurrency(numericValue));
     } else {
+      // Para percentagem, não multiplicamos por 100 ao salvar
       const numericValue = Number(newValue);
       onChange(numericValue);
       setDisplayValue(formatPercentage(numericValue));
