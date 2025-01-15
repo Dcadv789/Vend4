@@ -19,53 +19,110 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-        Custos Variáveis
-      </h2>
-      <NumberInput
-        label="Vendas"
-        suffix="%"
-        format="percentage"
-        value={costs.sales}
-        onChange={(value) => onCostChange('sales', value)}
-      />
-      <NumberInput
-        label="Impostos"
-        suffix="%"
-        format="percentage"
-        value={costs.taxes}
-        onChange={(value) => onCostChange('taxes', value)}
-      />
-      <NumberInput
-        label="Taxas de Cartão"
-        suffix="%"
-        format="percentage"
-        value={costs.cardFees}
-        onChange={(value) => onCostChange('cardFees', value)}
-      />
-      <NumberInput
-        label="Devoluções"
-        suffix="%"
-        format="percentage"
-        value={costs.returns}
-        onChange={(value) => onCostChange('returns', value)}
-      />
-      <NumberInput
-        label="Comissões"
-        suffix="%"
-        format="percentage"
-        value={costs.commission}
-        onChange={(value) => onCostChange('commission', value)}
-      />
-      <NumberInput
-        label="Outros"
-        suffix="%"
-        format="percentage"
-        value={costs.others}
-        onChange={(value) => onCostChange('others', value)}
-      />
-      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-        <p className="text-lg font-semibold text-gray-900 dark:text-white">
+      <div className="border border-gray-200 rounded-lg p-3">
+        <div className="flex items-center">
+          <label className="w-1/3 text-sm font-medium text-gray-700">
+            Custos de Vendas
+          </label>
+          <div className="flex-1">
+            <NumberInput
+              label=""
+              suffix="%"
+              format="percentage"
+              value={costs.sales}
+              onChange={(value) => onCostChange('sales', value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="border border-gray-200 rounded-lg p-3">
+        <div className="flex items-center">
+          <label className="w-1/3 text-sm font-medium text-gray-700">
+            Impostos
+          </label>
+          <div className="flex-1">
+            <NumberInput
+              label=""
+              suffix="%"
+              format="percentage"
+              value={costs.taxes}
+              onChange={(value) => onCostChange('taxes', value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="border border-gray-200 rounded-lg p-3">
+        <div className="flex items-center">
+          <label className="w-1/3 text-sm font-medium text-gray-700">
+            Taxas de Cartão
+          </label>
+          <div className="flex-1">
+            <NumberInput
+              label=""
+              suffix="%"
+              format="percentage"
+              value={costs.cardFees}
+              onChange={(value) => onCostChange('cardFees', value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="border border-gray-200 rounded-lg p-3">
+        <div className="flex items-center">
+          <label className="w-1/3 text-sm font-medium text-gray-700">
+            Devoluções
+          </label>
+          <div className="flex-1">
+            <NumberInput
+              label=""
+              suffix="%"
+              format="percentage"
+              value={costs.returns}
+              onChange={(value) => onCostChange('returns', value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="border border-gray-200 rounded-lg p-3">
+        <div className="flex items-center">
+          <label className="w-1/3 text-sm font-medium text-gray-700">
+            Comissões
+          </label>
+          <div className="flex-1">
+            <NumberInput
+              label=""
+              suffix="%"
+              format="percentage"
+              value={costs.commission}
+              onChange={(value) => onCostChange('commission', value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="border border-gray-200 rounded-lg p-3">
+        <div className="flex items-center">
+          <label className="w-1/3 text-sm font-medium text-gray-700">
+            Outros Custos
+          </label>
+          <div className="flex-1">
+            <NumberInput
+              label=""
+              suffix="%"
+              format="percentage"
+              value={costs.others}
+              onChange={(value) => onCostChange('others', value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-4 border-t border-gray-200">
+        <p className="text-lg font-semibold text-gray-900">
           Total: {formatPercentage(totalCosts)}
         </p>
       </div>

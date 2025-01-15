@@ -15,25 +15,42 @@ export const FixedCostsSection: React.FC<FixedCostsSectionProps> = ({ costs, onC
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-        Custos Fixos
-      </h2>
-      <NumberInput
-        label="Custos Mensais"
-        prefix="R$"
-        format="currency"
-        value={costs.monthly}
-        onChange={(value) => onCostChange('monthly', value)}
-      />
-      <NumberInput
-        label="Pró-Labore Atual"
-        prefix="R$"
-        format="currency"
-        value={costs.proLabore}
-        onChange={(value) => onCostChange('proLabore', value)}
-      />
-      <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-        <p className="text-lg font-semibold text-gray-900 dark:text-white">
+      <div className="border border-gray-200 rounded-lg p-3">
+        <div className="flex items-center">
+          <label className="w-1/3 text-sm font-medium text-gray-700">
+            Custos Mensais
+          </label>
+          <div className="flex-1">
+            <NumberInput
+              label=""
+              prefix="R$"
+              format="currency"
+              value={costs.monthly}
+              onChange={(value) => onCostChange('monthly', value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="border border-gray-200 rounded-lg p-3">
+        <div className="flex items-center">
+          <label className="w-1/3 text-sm font-medium text-gray-700">
+            Pró-Labore Atual
+          </label>
+          <div className="flex-1">
+            <NumberInput
+              label=""
+              prefix="R$"
+              format="currency"
+              value={costs.proLabore}
+              onChange={(value) => onCostChange('proLabore', value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="pt-4 border-t border-gray-200">
+        <p className="text-lg font-semibold text-gray-900">
           Total: {formatCurrency(totalCosts)}
         </p>
       </div>

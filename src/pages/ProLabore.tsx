@@ -58,40 +58,64 @@ export default function ProLabore() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl shadow-lg p-8 text-white">
+        <h1 className="text-3xl font-bold mb-2">
           Cálculo de Pró-labore
         </h1>
-        <p className="text-gray-600">
+        <p className="text-blue-100">
           Calcule o valor ideal do seu pró-labore com base no faturamento e custos da sua empresa
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <RevenueSection
-            revenue={revenue}
-            onRevenueChange={handleRevenueChange}
-          />
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="bg-gray-800 px-6 py-4">
+            <h2 className="text-xl font-semibold text-white">Faturamento</h2>
+            <p className="text-gray-300 text-sm">Registre suas fontes de receita</p>
+          </div>
+          <div className="p-6">
+            <RevenueSection
+              revenue={revenue}
+              onRevenueChange={handleRevenueChange}
+            />
+          </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <FixedCostsSection
-            costs={fixedCosts}
-            onCostChange={handleFixedCostChange}
-          />
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="bg-gray-800 px-6 py-4">
+            <h2 className="text-xl font-semibold text-white">Custos Fixos</h2>
+            <p className="text-gray-300 text-sm">Despesas mensais recorrentes</p>
+          </div>
+          <div className="p-6">
+            <FixedCostsSection
+              costs={fixedCosts}
+              onCostChange={handleFixedCostChange}
+            />
+          </div>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-          <VariableCostsSection
-            costs={variableCosts}
-            onCostChange={handleVariableCostChange}
-          />
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div className="bg-gray-800 px-6 py-4">
+            <h2 className="text-xl font-semibold text-white">Custos Variáveis</h2>
+            <p className="text-gray-300 text-sm">Despesas proporcionais à receita</p>
+          </div>
+          <div className="p-6">
+            <VariableCostsSection
+              costs={variableCosts}
+              onCostChange={handleVariableCostChange}
+            />
+          </div>
         </div>
       </div>
 
-      <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-        <ResultsSection {...results} />
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 px-8 py-4">
+          <h2 className="text-xl font-semibold text-white">Resultados da Análise</h2>
+          <p className="text-indigo-100 text-sm">Recomendações baseadas nos dados informados</p>
+        </div>
+        <div className="p-8">
+          <ResultsSection {...results} />
+        </div>
       </div>
     </div>
   );
