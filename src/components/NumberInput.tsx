@@ -21,7 +21,7 @@ export const NumberInput: React.FC<NumberInputProps> = ({
   const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
-    if (!isFocused) {
+    if (!isFocused && value > 0) {
       if (format === 'currency') {
         setDisplayValue(formatCurrency(value));
       } else {
@@ -46,26 +46,52 @@ export const NumberInput: React.FC<NumberInputProps> = ({
 
   const handleFocus = () => {
     setIsFocused(true);
-    setDisplayValue(format === 'currency' ? formatCurrency(value) : formatPercentage(value));
+    setDisplayValue('');
   };
 
   const handleBlur = () => {
     setIsFocused(false);
+    if (value > 0) {
+      if (format === 'currency') {
+        setDisplayValue(formatCurrency(value));
+      } else {
+        setDisplayValue(formatPercentage(value));
+      }
+    } else {
+      setDisplayValue('');
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let newValue = e.target.value.replace(/[^\d,]/g, '').replace(',', '.');
+    let inputValue = e.target.value;
     
-    if (format === 'currency') {
-      const numericValue = Number(newValue);
-      onChange(numericValue);
-      setDisplayValue(formatCurrency(numericValue));
-    } else {
-      // Para percentagem, não multiplicamos por 100 ao salvar
-      const numericValue = Number(newValue);
-      onChange(numericValue);
-      setDisplayValue(formatPercentage(numericValue));
+    // Remove todos os caracteres não numéricos exceto vírgula
+    inputValue = inputValue.replace(/[^\d,]/g, '');
+    
+    // Garante que só existe uma vírgula
+    const parts = inputValue.split(',');
+    if (parts.length > 2) {
+      inputValue = parts[0] + ',' + parts[1];
     }
+
+    // Formata o número com pontos de milhar
+    let numericPart = inputValue.split(',')[0];
+    if (numericPart.length > 3) {
+      numericPart = numericPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    // Reconstrói o valor com a parte decimal
+    if (inputValue.includes(',')) {
+      inputValue = numericPart + ',' + inputValue.split(',')[1];
+    } else {
+      inputValue = numericPart;
+    }
+
+    setDisplayValue(inputValue);
+
+    // Converte para número e chama o onChange
+    const numericValue = Number(inputValue.replace(/\./g, '').replace(',', '.'));
+    onChange(numericValue);
   };
 
   return (
@@ -84,6 +110,7 @@ export const NumberInput: React.FC<NumberInputProps> = ({
         className={`block w-full rounded-md border-gray-300 py-2 focus:border-blue-500 focus:ring-blue-500 sm:text-sm ${
           prefix ? 'pl-7' : 'pl-3'
         } ${suffix ? 'pr-8' : 'pr-3'}`}
+        placeholder={format === 'currency' ? '0,00' : '0,00%'}
       />
       {suffix && (
         <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
