@@ -1,5 +1,4 @@
 import React from 'react';
-import { NumberInput } from '../NumberInput';
 import { formatCurrency } from '../../utils/formatters';
 
 interface RevenueSectionProps {
@@ -14,6 +13,18 @@ interface RevenueSectionProps {
 export const RevenueSection: React.FC<RevenueSectionProps> = ({ revenue, onRevenueChange }) => {
   const totalRevenue = Object.values(revenue).reduce((a, b) => a + b, 0);
 
+  const formatInputCurrency = (value: number) => {
+    return value.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  };
+
+  const handleInputChange = (key: string, value: string) => {
+    const numericValue = value.replace(/\D/g, '');
+    onRevenueChange(key, Number(numericValue) / 100);
+  };
+
   return (
     <div className="space-y-2">
       <div className="border border-gray-200 rounded-lg p-2">
@@ -22,12 +33,12 @@ export const RevenueSection: React.FC<RevenueSectionProps> = ({ revenue, onReven
             Receita com Serviços
           </label>
           <div className="w-2/5">
-            <NumberInput
-              label=""
-              prefix="R$"
-              format="currency"
-              value={revenue.services}
-              onChange={(value) => onRevenueChange('services', value)}
+            <input
+              type="text"
+              value={formatInputCurrency(revenue.services)}
+              onChange={(e) => handleInputChange('services', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="R$ 0,00"
             />
           </div>
         </div>
@@ -39,12 +50,12 @@ export const RevenueSection: React.FC<RevenueSectionProps> = ({ revenue, onReven
             Receita com Produtos
           </label>
           <div className="w-2/5">
-            <NumberInput
-              label=""
-              prefix="R$"
-              format="currency"
-              value={revenue.products}
-              onChange={(value) => onRevenueChange('products', value)}
+            <input
+              type="text"
+              value={formatInputCurrency(revenue.products)}
+              onChange={(e) => handleInputChange('products', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="R$ 0,00"
             />
           </div>
         </div>
@@ -56,12 +67,12 @@ export const RevenueSection: React.FC<RevenueSectionProps> = ({ revenue, onReven
             Outras Receitas
           </label>
           <div className="w-2/5">
-            <NumberInput
-              label=""
-              prefix="R$"
-              format="currency"
-              value={revenue.others}
-              onChange={(value) => onRevenueChange('others', value)}
+            <input
+              type="text"
+              value={formatInputCurrency(revenue.others)}
+              onChange={(e) => handleInputChange('others', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="R$ 0,00"
             />
           </div>
         </div>

@@ -1,5 +1,4 @@
 import React from 'react';
-import { NumberInput } from '../NumberInput';
 import { formatPercentage } from '../../utils/formatters';
 
 interface VariableCostsSectionProps {
@@ -17,6 +16,15 @@ interface VariableCostsSectionProps {
 export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ costs, onCostChange }) => {
   const totalCosts = Object.values(costs).reduce((a, b) => a + b, 0);
 
+  const formatInputPercentage = (value: number) => {
+    return `${(value).toFixed(2)}%`;
+  };
+
+  const handleInputChange = (key: string, value: string) => {
+    const numericValue = value.replace(/[^\d,]/g, '');
+    onCostChange(key, Number(numericValue));
+  };
+
   return (
     <div className="space-y-2">
       <div className="border border-gray-200 rounded-lg p-2">
@@ -25,12 +33,12 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
             Custo da Mercadoria
           </label>
           <div className="w-2/5">
-            <NumberInput
-              label=""
-              suffix="%"
-              format="percentage"
-              value={costs.sales}
-              onChange={(value) => onCostChange('sales', value)}
+            <input
+              type="text"
+              value={formatInputPercentage(costs.sales)}
+              onChange={(e) => handleInputChange('sales', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="0,00%"
             />
           </div>
         </div>
@@ -42,12 +50,12 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
             Impostos
           </label>
           <div className="w-2/5">
-            <NumberInput
-              label=""
-              suffix="%"
-              format="percentage"
-              value={costs.taxes}
-              onChange={(value) => onCostChange('taxes', value)}
+            <input
+              type="text"
+              value={formatInputPercentage(costs.taxes)}
+              onChange={(e) => handleInputChange('taxes', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="0,00%"
             />
           </div>
         </div>
@@ -59,12 +67,12 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
             Taxas de Cartão
           </label>
           <div className="w-2/5">
-            <NumberInput
-              label=""
-              suffix="%"
-              format="percentage"
-              value={costs.cardFees}
-              onChange={(value) => onCostChange('cardFees', value)}
+            <input
+              type="text"
+              value={formatInputPercentage(costs.cardFees)}
+              onChange={(e) => handleInputChange('cardFees', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="0,00%"
             />
           </div>
         </div>
@@ -76,12 +84,12 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
             Devoluções
           </label>
           <div className="w-2/5">
-            <NumberInput
-              label=""
-              suffix="%"
-              format="percentage"
-              value={costs.returns}
-              onChange={(value) => onCostChange('returns', value)}
+            <input
+              type="text"
+              value={formatInputPercentage(costs.returns)}
+              onChange={(e) => handleInputChange('returns', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="0,00%"
             />
           </div>
         </div>
@@ -93,12 +101,12 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
             Comissões
           </label>
           <div className="w-2/5">
-            <NumberInput
-              label=""
-              suffix="%"
-              format="percentage"
-              value={costs.commission}
-              onChange={(value) => onCostChange('commission', value)}
+            <input
+              type="text"
+              value={formatInputPercentage(costs.commission)}
+              onChange={(e) => handleInputChange('commission', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="0,00%"
             />
           </div>
         </div>
@@ -110,12 +118,12 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
             Outros Custos
           </label>
           <div className="w-2/5">
-            <NumberInput
-              label=""
-              suffix="%"
-              format="percentage"
-              value={costs.others}
-              onChange={(value) => onCostChange('others', value)}
+            <input
+              type="text"
+              value={formatInputPercentage(costs.others)}
+              onChange={(e) => handleInputChange('others', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="0,00%"
             />
           </div>
         </div>
@@ -123,7 +131,7 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
 
       <div className="pt-2 border-t border-gray-200">
         <p className="text-lg font-semibold text-gray-900 px-2">
-          Total: {(totalCosts / 100).toFixed(2)}%
+          Total: {totalCosts.toFixed(2)}%
         </p>
       </div>
     </div>

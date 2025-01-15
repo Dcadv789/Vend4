@@ -1,5 +1,4 @@
 import React from 'react';
-import { NumberInput } from '../NumberInput';
 import { formatCurrency } from '../../utils/formatters';
 
 interface FixedCostsSectionProps {
@@ -13,6 +12,18 @@ interface FixedCostsSectionProps {
 export const FixedCostsSection: React.FC<FixedCostsSectionProps> = ({ costs, onCostChange }) => {
   const totalCosts = Object.values(costs).reduce((a, b) => a + b, 0);
 
+  const formatInputCurrency = (value: number) => {
+    return value.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  };
+
+  const handleInputChange = (key: string, value: string) => {
+    const numericValue = value.replace(/\D/g, '');
+    onCostChange(key, Number(numericValue) / 100);
+  };
+
   return (
     <div className="space-y-2">
       <div className="border border-gray-200 rounded-lg p-2">
@@ -21,12 +32,12 @@ export const FixedCostsSection: React.FC<FixedCostsSectionProps> = ({ costs, onC
             Custos Mensais
           </label>
           <div className="w-2/5">
-            <NumberInput
-              label=""
-              prefix="R$"
-              format="currency"
-              value={costs.monthly}
-              onChange={(value) => onCostChange('monthly', value)}
+            <input
+              type="text"
+              value={formatInputCurrency(costs.monthly)}
+              onChange={(e) => handleInputChange('monthly', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="R$ 0,00"
             />
           </div>
         </div>
@@ -38,12 +49,12 @@ export const FixedCostsSection: React.FC<FixedCostsSectionProps> = ({ costs, onC
             Pró-Labore Atual
           </label>
           <div className="w-2/5">
-            <NumberInput
-              label=""
-              prefix="R$"
-              format="currency"
-              value={costs.proLabore}
-              onChange={(value) => onCostChange('proLabore', value)}
+            <input
+              type="text"
+              value={formatInputCurrency(costs.proLabore)}
+              onChange={(e) => handleInputChange('proLabore', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="R$ 0,00"
             />
           </div>
         </div>
