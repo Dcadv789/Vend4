@@ -15,14 +15,33 @@ interface VariableCostsSectionProps {
 
 export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ costs, onCostChange }) => {
   const totalCosts = Object.values(costs).reduce((a, b) => a + b, 0);
+  const [focusedInput, setFocusedInput] = React.useState<string | null>(null);
 
-  const formatInputPercentage = (value: number) => {
-    return `${(value).toFixed(2)}%`;
+  const handleInputFocus = (key: string) => {
+    setFocusedInput(key);
+  };
+
+  const handleInputBlur = () => {
+    setFocusedInput(null);
   };
 
   const handleInputChange = (key: string, value: string) => {
-    const numericValue = value.replace(/[^\d,]/g, '');
-    onCostChange(key, Number(numericValue));
+    const numericValue = value.replace(/[^\d]/g, '');
+    if (numericValue === '') {
+      onCostChange(key, 0);
+      return;
+    }
+
+    const decimalValue = Number(numericValue) / 100;
+    onCostChange(key, decimalValue);
+  };
+
+  const formatInputValue = (key: string, value: number) => {
+    if (focusedInput === key) {
+      const numStr = (value * 100).toFixed(2);
+      return numStr.replace(/[.,]00$/, '');
+    }
+    return formatPercentage(value);
   };
 
   return (
@@ -35,8 +54,10 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
           <div className="w-2/5">
             <input
               type="text"
-              value={formatInputPercentage(costs.sales)}
+              value={formatInputValue('sales', costs.sales)}
               onChange={(e) => handleInputChange('sales', e.target.value)}
+              onFocus={() => handleInputFocus('sales')}
+              onBlur={handleInputBlur}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="0,00%"
             />
@@ -52,8 +73,10 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
           <div className="w-2/5">
             <input
               type="text"
-              value={formatInputPercentage(costs.taxes)}
+              value={formatInputValue('taxes', costs.taxes)}
               onChange={(e) => handleInputChange('taxes', e.target.value)}
+              onFocus={() => handleInputFocus('taxes')}
+              onBlur={handleInputBlur}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="0,00%"
             />
@@ -69,8 +92,10 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
           <div className="w-2/5">
             <input
               type="text"
-              value={formatInputPercentage(costs.cardFees)}
+              value={formatInputValue('cardFees', costs.cardFees)}
               onChange={(e) => handleInputChange('cardFees', e.target.value)}
+              onFocus={() => handleInputFocus('cardFees')}
+              onBlur={handleInputBlur}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="0,00%"
             />
@@ -86,8 +111,10 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
           <div className="w-2/5">
             <input
               type="text"
-              value={formatInputPercentage(costs.returns)}
+              value={formatInputValue('returns', costs.returns)}
               onChange={(e) => handleInputChange('returns', e.target.value)}
+              onFocus={() => handleInputFocus('returns')}
+              onBlur={handleInputBlur}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="0,00%"
             />
@@ -103,8 +130,10 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
           <div className="w-2/5">
             <input
               type="text"
-              value={formatInputPercentage(costs.commission)}
+              value={formatInputValue('commission', costs.commission)}
               onChange={(e) => handleInputChange('commission', e.target.value)}
+              onFocus={() => handleInputFocus('commission')}
+              onBlur={handleInputBlur}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="0,00%"
             />
@@ -120,8 +149,10 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
           <div className="w-2/5">
             <input
               type="text"
-              value={formatInputPercentage(costs.others)}
+              value={formatInputValue('others', costs.others)}
               onChange={(e) => handleInputChange('others', e.target.value)}
+              onFocus={() => handleInputFocus('others')}
+              onBlur={handleInputBlur}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="0,00%"
             />
@@ -131,7 +162,7 @@ export const VariableCostsSection: React.FC<VariableCostsSectionProps> = ({ cost
 
       <div className="pt-2 border-t border-gray-200">
         <p className="text-lg font-semibold text-gray-900 px-2">
-          Total: {totalCosts.toFixed(2)}%
+          Total: {formatPercentage(totalCosts)}
         </p>
       </div>
     </div>
