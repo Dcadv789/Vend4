@@ -15,13 +15,13 @@ export const RevenueSection: React.FC<RevenueSectionProps> = ({ revenue, onReven
   const totalRevenue = Object.values(revenue).reduce((a, b) => a + b, 0);
 
   return (
-    <div className="space-y-4">
-      <div className="border border-gray-200 rounded-lg p-3">
+    <div className="space-y-2">
+      <div className="border border-gray-200 rounded-lg p-2">
         <div className="flex items-center">
-          <label className="w-1/3 text-sm font-medium text-gray-700">
+          <label className="w-3/5 text-sm font-medium text-gray-700 truncate pr-2">
             Receita com Serviços
           </label>
-          <div className="flex-1">
+          <div className="w-2/5">
             <NumberInput
               label=""
               prefix="R$"
@@ -33,12 +33,12 @@ export const RevenueSection: React.FC<RevenueSectionProps> = ({ revenue, onReven
         </div>
       </div>
 
-      <div className="border border-gray-200 rounded-lg p-3">
+      <div className="border border-gray-200 rounded-lg p-2">
         <div className="flex items-center">
-          <label className="w-1/3 text-sm font-medium text-gray-700">
+          <label className="w-3/5 text-sm font-medium text-gray-700 truncate pr-2">
             Receita com Produtos
           </label>
-          <div className="flex-1">
+          <div className="w-2/5">
             <NumberInput
               label=""
               prefix="R$"
@@ -50,12 +50,12 @@ export const RevenueSection: React.FC<RevenueSectionProps> = ({ revenue, onReven
         </div>
       </div>
 
-      <div className="border border-gray-200 rounded-lg p-3">
+      <div className="border border-gray-200 rounded-lg p-2">
         <div className="flex items-center">
-          <label className="w-1/3 text-sm font-medium text-gray-700">
+          <label className="w-3/5 text-sm font-medium text-gray-700 truncate pr-2">
             Outras Receitas
           </label>
-          <div className="flex-1">
+          <div className="w-2/5">
             <NumberInput
               label=""
               prefix="R$"
@@ -67,7 +67,7 @@ export const RevenueSection: React.FC<RevenueSectionProps> = ({ revenue, onReven
         </div>
       </div>
 
-      <div className="pt-4 border-t border-gray-200">
+      <div className="pt-2 border-t border-gray-200">
         <p className="text-lg font-semibold text-gray-900">
           Total: {formatCurrency(totalRevenue)}
         </p>
