@@ -3,6 +3,8 @@ import { RevenueSection } from '../components/ProLabore/RevenueSection';
 import { FixedCostsSection } from '../components/ProLabore/FixedCostsSection';
 import { VariableCostsSection } from '../components/ProLabore/VariableCostsSection';
 import { ResultsSection } from '../components/ProLabore/ResultsSection';
+import { Save } from 'lucide-react';
+import { Notification } from '../components/Notification';
 
 export default function ProLabore() {
   const [companyName, setCompanyName] = useState('');
@@ -26,6 +28,8 @@ export default function ProLabore() {
     commission: 0,
     others: 0
   });
+
+  const [showNotification, setShowNotification] = useState(false);
 
   const handleRevenueChange = (key: string, value: number) => {
     setRevenue(prev => ({ ...prev, [key]: value }));
@@ -66,10 +70,29 @@ export default function ProLabore() {
     };
   };
 
+  const handleSaveCalculation = () => {
+    const calculation = {
+      revenue,
+      fixedCosts,
+      variableCosts,
+      ...calculateResults()
+    };
+
+    localStorage.setItem('lastProLaboreCalculation', JSON.stringify(calculation));
+    setShowNotification(true);
+  };
+
   const results = calculateResults();
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
+      {showNotification && (
+        <Notification
+          message="Cálculo salvo com sucesso!"
+          onClose={() => setShowNotification(false)}
+        />
+      )}
+
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl shadow-lg p-8 text-white">
         <h1 className="text-3xl font-bold mb-2">
           Cálculo de Pró-labore
@@ -155,9 +178,18 @@ export default function ProLabore() {
       </div>
 
       <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 px-8 py-4">
-          <h2 className="text-xl font-semibold text-white">Resultados da Análise</h2>
-          <p className="text-indigo-100 text-sm">Recomendações baseadas nos dados informados</p>
+        <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 px-8 py-4 flex justify-between items-center">
+          <div>
+            <h2 className="text-xl font-semibold text-white">Resultados da Análise</h2>
+            <p className="text-indigo-100 text-sm">Recomendações baseadas nos dados informados</p>
+          </div>
+          <button
+            onClick={handleSaveCalculation}
+            className="inline-flex items-center px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors shadow-sm"
+          >
+            <Save size={20} className="mr-2" />
+            Salvar Cálculo
+          </button>
         </div>
         <div className="p-8">
           <ResultsSection {...results} />
