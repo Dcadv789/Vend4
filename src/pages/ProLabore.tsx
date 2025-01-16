@@ -30,6 +30,8 @@ export default function ProLabore() {
   });
 
   const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [notificationType, setNotificationType] = useState<'success' | 'error'>('success');
 
   const handleRevenueChange = (key: string, value: number) => {
     setRevenue(prev => ({ ...prev, [key]: value }));
@@ -53,6 +55,28 @@ export default function ProLabore() {
     setCnpj(formattedCnpj);
   };
 
+  const validateData = () => {
+    if (!companyName.trim()) {
+      return 'O nome da empresa é obrigatório';
+    }
+
+    if (companyName.trim().length < 3) {
+      return 'O nome da empresa deve ter pelo menos 3 caracteres';
+    }
+
+    const cnpjNumbers = cnpj.replace(/\D/g, '');
+    if (cnpjNumbers.length !== 14) {
+      return 'O CNPJ deve ter 14 dígitos';
+    }
+
+    const totalRevenue = Object.values(revenue).reduce((a, b) => a + b, 0);
+    if (totalRevenue <= 0) {
+      return 'É necessário informar pelo menos uma fonte de receita';
+    }
+
+    return null;
+  };
+
   const calculateResults = () => {
     const totalRevenue = Object.values(revenue).reduce((a, b) => a + b, 0);
     const totalVariableCosts = Object.values(variableCosts).reduce((a, b) => a + b, 0) / 100;
@@ -71,14 +95,29 @@ export default function ProLabore() {
   };
 
   const handleSaveCalculation = () => {
+    const validationError = validateData();
+    if (validationError) {
+      setNotificationMessage(validationError);
+      setNotificationType('error');
+      setShowNotification(true);
+      return;
+    }
+
     const calculation = {
       revenue,
       fixedCosts,
       variableCosts,
+      companyName,
+      cnpj,
       ...calculateResults()
     };
 
     localStorage.setItem('lastProLaboreCalculation', JSON.stringify(calculation));
+    localStorage.setItem('companyName', companyName);
+    localStorage.setItem('cnpj', cnpj);
+    
+    setNotificationMessage('Cálculo salvo com sucesso!');
+    setNotificationType('success');
     setShowNotification(true);
   };
 
@@ -88,8 +127,9 @@ export default function ProLabore() {
     <div className="max-w-7xl mx-auto space-y-8">
       {showNotification && (
         <Notification
-          message="Cálculo salvo com sucesso!"
+          message={notificationMessage}
           onClose={() => setShowNotification(false)}
+          type={notificationType}
         />
       )}
 

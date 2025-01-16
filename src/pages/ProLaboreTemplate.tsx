@@ -353,6 +353,18 @@ export default function ProLaboreTemplate() {
     }
   };
 
+  const formatCurrency = (value: number) => {
+    return value.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  };
+
+  const getTotalRevenue = () => {
+    if (!lastCalculation?.revenue) return 0;
+    return Object.values(lastCalculation.revenue).reduce((a: number, b: number) => a + b, 0);
+  };
+
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       {showNotification && (
@@ -372,10 +384,42 @@ export default function ProLaboreTemplate() {
       </div>
 
       <div className="grid grid-cols-2 gap-8">
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-          <div className="p-6 space-y-8">
-            {Object.entries(groupedFields).map(([group, groupFields]) => (
-              <div key={group} className="space-y-4">
+        <div className="space-y-8">
+          {lastCalculation && (
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+              <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
+                <h3 className="text-lg font-semibold text-white">Último Pró-Labore Calculado</h3>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Empresa:</span>
+                    <span className="font-medium text-gray-900">{companyName || 'Não informado'}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">CNPJ:</span>
+                    <span className="font-medium text-gray-900">{cnpj || 'Não informado'}</span>
+                  </div>
+                </div>
+                <div className="border-t border-gray-200 pt-4 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Faturamento Total:</span>
+                    <span className="font-medium text-gray-900">{formatCurrency(getTotalRevenue())}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Pró-labore Recomendado:</span>
+                    <span className="font-medium text-green-600">
+                      {formatCurrency(lastCalculation.maximumRecommended * 0.7)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {Object.entries(groupedFields).map(([group, groupFields]) => (
+            <div key={group} className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+              <div className="p-6 space-y-4">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">
                   {getGroupTitle(group)}
                 </h3>
@@ -405,38 +449,38 @@ export default function ProLaboreTemplate() {
                   ))}
                 </div>
               </div>
-            ))}
-
-            <div className="flex gap-4">
-              <button
-                onClick={handleSaveTemplate}
-                className="flex-1 inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <Save size={20} className="mr-2" />
-                Salvar Template
-              </button>
-
-              <PDFDownloadLink
-                document={
-                  <ProLaborePDF 
-                    fields={fields} 
-                    groupedFields={groupedFields} 
-                    companyName={companyName} 
-                    cnpj={cnpj}
-                    lastCalculation={lastCalculation}
-                  />
-                }
-                fileName="relatorio-pro-labore.pdf"
-                className="flex-1 inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-              >
-                {({ loading }) => (
-                  <>
-                    <FileDown size={20} className="mr-2" />
-                    {loading ? 'Gerando PDF...' : 'Exportar PDF'}
-                  </>
-                )}
-              </PDFDownloadLink>
             </div>
+          ))}
+
+          <div className="flex gap-4">
+            <button
+              onClick={handleSaveTemplate}
+              className="flex-1 inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <Save size={20} className="mr-2" />
+              Salvar Template
+            </button>
+
+            <PDFDownloadLink
+              document={
+                <ProLaborePDF 
+                  fields={fields} 
+                  groupedFields={groupedFields} 
+                  companyName={companyName} 
+                  cnpj={cnpj}
+                  lastCalculation={lastCalculation}
+                />
+              }
+              fileName="relatorio-pro-labore.pdf"
+              className="flex-1 inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              {({ loading }) => (
+                <>
+                  <FileDown size={20} className="mr-2" />
+                  {loading ? 'Gerando PDF...' : 'Exportar PDF'}
+                </>
+              )}
+            </PDFDownloadLink>
           </div>
         </div>
 
@@ -490,10 +534,7 @@ export default function ProLaboreTemplate() {
                       <span className="text-gray-600">Pró-labore Recomendado:</span>
                       <span className="font-bold text-blue-600">
                         {lastCalculation ? 
-                          (lastCalculation.maximumRecommended * 0.7).toLocaleString('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL'
-                          }) : 
+                          formatCurrency(lastCalculation.maximumRecommended * 0.7) : 
                           'R$ 0,00'
                         }
                       </span>
@@ -502,10 +543,7 @@ export default function ProLaboreTemplate() {
                       <span className="text-gray-600">Pró-labore Máximo:</span>
                       <span className="font-bold text-blue-600">
                         {lastCalculation ? 
-                          lastCalculation.maximumRecommended.toLocaleString('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL'
-                          }) : 
+                          formatCurrency(lastCalculation.maximumRecommended) : 
                           'R$ 0,00'
                         }
                       </span>
@@ -529,8 +567,7 @@ export default function ProLaboreTemplate() {
                                               'variableCosts']?.[field.id] ?
                                 (group === 'custos_variaveis' ? 
                                   `${lastCalculation.variableCosts[field.id].toFixed(2)}%` :
-                                  lastCalculation[group === 'faturamento' ? 'revenue' : 'fixedCosts'][field.id]
-                                    .toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                                  formatCurrency(lastCalculation[group === 'faturamento' ? 'revenue' : 'fixedCosts'][field.id])
                                 ) :
                                 field.type === 'currency' ? 'R$ 0,00' :
                                 field.type === 'number' ? '0,00%' :
