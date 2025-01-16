@@ -5,6 +5,8 @@ import { VariableCostsSection } from '../components/ProLabore/VariableCostsSecti
 import { ResultsSection } from '../components/ProLabore/ResultsSection';
 
 export default function ProLabore() {
+  const [companyName, setCompanyName] = useState('');
+  const [cnpj, setCnpj] = useState('');
   const [revenue, setRevenue] = useState({
     services: 0,
     products: 0,
@@ -37,23 +39,29 @@ export default function ProLabore() {
     setVariableCosts(prev => ({ ...prev, [key]: value }));
   };
 
+  const formatCnpj = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    return numbers.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*/, '$1.$2.$3/$4-$5').substring(0, 18);
+  };
+
+  const handleCnpjChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedCnpj = formatCnpj(e.target.value);
+    setCnpj(formattedCnpj);
+  };
+
   const calculateResults = () => {
     const totalRevenue = Object.values(revenue).reduce((a, b) => a + b, 0);
-    // Agora os custos variáveis já estão em percentual (75 = 75%), então dividimos por 100
     const totalVariableCosts = Object.values(variableCosts).reduce((a, b) => a + b, 0) / 100;
     const totalFixedCosts = fixedCosts.monthly;
 
-    // Fórmula: Pró-labore Máx = (Faturamento × (1 - Taxa)) - Custos Fixos
     const maximumRecommended = (totalRevenue * (1 - totalVariableCosts)) - totalFixedCosts;
-    
-    // O cálculo preliminar agora é baseado no mesmo princípio
     const preliminaryCalculation = maximumRecommended;
 
     return {
       preliminaryCalculation,
       maximumRecommended,
       currentProLabore: fixedCosts.proLabore,
-      userName: 'Usuário',
+      userName: companyName || 'Usuário',
       monthlyFixedCosts: totalFixedCosts
     };
   };
@@ -69,6 +77,40 @@ export default function ProLabore() {
         <p className="text-blue-100">
           Calcule o valor ideal do seu pró-labore com base no faturamento e custos da sua empresa
         </p>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="bg-gray-800 px-6 py-4">
+          <h2 className="text-xl font-semibold text-white">Dados da Empresa</h2>
+          <p className="text-gray-300 text-sm">Informações básicas da empresa</p>
+        </div>
+        <div className="p-6 grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Nome da Empresa
+            </label>
+            <input
+              type="text"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Digite o nome da empresa"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              CNPJ
+            </label>
+            <input
+              type="text"
+              value={cnpj}
+              onChange={handleCnpjChange}
+              maxLength={18}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="00.000.000/0001-00"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
