@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Save, Plus, Trash2, ToggleLeft, ToggleRight, FileDown } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Save, Plus, Trash2, ToggleLeft, ToggleRight, FileDown, Building2 } from 'lucide-react';
 import { Document, Page, Text, View, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
 import { Notification } from '../components/Notification';
 
@@ -23,7 +23,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#1E40AF',
     padding: 20,
     marginBottom: 20,
-    borderRadius: 4
+    borderRadius: 4,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start'
+  },
+  headerContent: {
+    flex: 1
+  },
+  headerLogo: {
+    width: 60,
+    height: 60,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 4,
+    marginLeft: 20
   },
   headerTitle: {
     color: '#FFFFFF',
@@ -31,18 +44,34 @@ const styles = StyleSheet.create({
     marginBottom: 12
   },
   companyInfo: {
-    marginBottom: 4
+    marginBottom: 12
   },
   companyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 4
   },
-  companyLabel: {
-    color: '#93C5FD',
-    fontSize: 10,
-    marginBottom: 2
-  },
-  companyValue: {
+  companyName: {
     color: '#FFFFFF',
+    fontSize: 14,
+    marginRight: 12
+  },
+  companyCnpj: {
+    color: '#93C5FD',
+    fontSize: 12
+  },
+  dateTimeDivider: {
+    borderTopWidth: 1,
+    borderTopColor: '#93C5FD',
+    marginTop: 8,
+    paddingTop: 8
+  },
+  dateTimeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+  dateTimeText: {
+    color: '#93C5FD',
     fontSize: 10
   },
   section: {
@@ -100,27 +129,35 @@ const styles = StyleSheet.create({
   }
 });
 
-const ProLaborePDF = ({ fields, groupedFields }: { fields: TemplateField[], groupedFields: Record<string, TemplateField[]> }) => (
+const ProLaborePDF = ({ fields, groupedFields, companyName, cnpj }: { 
+  fields: TemplateField[], 
+  groupedFields: Record<string, TemplateField[]>,
+  companyName: string,
+  cnpj: string
+}) => (
   <Document>
     <Page size="A4" style={styles.page}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Relatório de Pró-labore</Text>
-        <View style={styles.companyInfo}>
-          <View style={styles.companyRow}>
-            <Text style={styles.companyLabel}>Empresa</Text>
-            <Text style={styles.companyValue}>Nome da Empresa</Text>
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>Relatório de Pró-labore</Text>
+          <View style={styles.companyInfo}>
+            <View style={styles.companyRow}>
+              <Text style={styles.companyName}>{companyName || 'Nome da Empresa'}</Text>
+              <Text style={styles.companyCnpj}>{cnpj || '00.000.000/0001-00'}</Text>
+            </View>
           </View>
-          <View style={styles.companyRow}>
-            <Text style={styles.companyLabel}>CNPJ</Text>
-            <Text style={styles.companyValue}>00.000.000/0001-00</Text>
-          </View>
-          <View style={styles.companyRow}>
-            <Text style={styles.companyLabel}>Data e Hora</Text>
-            <Text style={styles.companyValue}>
-              {new Date().toLocaleString('pt-BR')}
-            </Text>
+          <View style={styles.dateTimeDivider}>
+            <View style={styles.dateTimeRow}>
+              <Text style={styles.dateTimeText}>
+                {new Date().toLocaleDateString('pt-BR')}
+              </Text>
+              <Text style={styles.dateTimeText}>
+                {new Date().toLocaleTimeString('pt-BR')}
+              </Text>
+            </View>
           </View>
         </View>
+        <View style={styles.headerLogo} />
       </View>
 
       <View style={styles.analysis}>
@@ -202,6 +239,15 @@ export default function ProLaboreTemplate() {
     { id: '11', label: 'Outros Custos (%)', type: 'number', required: true, enabled: true, group: 'custos_variaveis' }
   ]);
   const [showNotification, setShowNotification] = useState(false);
+  const [companyName, setCompanyName] = useState('');
+  const [cnpj, setCnpj] = useState('');
+
+  useEffect(() => {
+    const savedCompanyName = localStorage.getItem('companyName');
+    const savedCnpj = localStorage.getItem('cnpj');
+    if (savedCompanyName) setCompanyName(savedCompanyName);
+    if (savedCnpj) setCnpj(savedCnpj);
+  }, []);
 
   const handleToggleField = (id: string) => {
     setFields(fields.map(field => 
@@ -311,7 +357,7 @@ export default function ProLaboreTemplate() {
               </button>
 
               <PDFDownloadLink
-                document={<ProLaborePDF fields={fields} groupedFields={groupedFields} />}
+                document={<ProLaborePDF fields={fields} groupedFields={groupedFields} companyName={companyName} cnpj={cnpj} />}
                 fileName="relatorio-pro-labore.pdf"
                 className="flex-1 inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
               >
@@ -330,21 +376,24 @@ export default function ProLaboreTemplate() {
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Pré-visualização</h3>
             <div className="relative bg-white border border-gray-200 rounded-lg shadow-sm" style={{ height: '842px', width: '595px', transform: 'scale(0.7)', transformOrigin: 'top left' }}>
-              <div className="bg-blue-600 p-5">
-                <h1 className="text-xl font-bold text-white mb-4">Relatório de Pró-labore</h1>
-                <div className="space-y-2">
-                  <div>
-                    <p className="text-sm text-blue-200">Empresa</p>
-                    <p className="font-medium text-white">Nome da Empresa</p>
+              <div className="bg-blue-600 p-5 flex justify-between items-start">
+                <div className="flex-1">
+                  <h1 className="text-xl font-bold text-white mb-4">Relatório de Pró-labore</h1>
+                  <div className="space-y-1">
+                    <div className="flex items-center space-x-4">
+                      <p className="font-medium text-white">{companyName || 'Nome da Empresa'}</p>
+                      <p className="text-blue-200">{cnpj || '00.000.000/0001-00'}</p>
+                    </div>
+                    <div className="pt-4 mt-4 border-t border-blue-400">
+                      <div className="flex justify-between text-blue-200 text-sm">
+                        <span>{new Date().toLocaleDateString('pt-BR')}</span>
+                        <span>{new Date().toLocaleTimeString('pt-BR')}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-blue-200">CNPJ</p>
-                    <p className="font-medium text-white">00.000.000/0001-00</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-blue-200">Data e Hora</p>
-                    <p className="font-medium text-white">{new Date().toLocaleString('pt-BR')}</p>
-                  </div>
+                </div>
+                <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center">
+                  <Building2 className="w-10 h-10 text-blue-600" />
                 </div>
               </div>
 
