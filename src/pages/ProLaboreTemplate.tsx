@@ -14,16 +14,12 @@ interface TemplateField {
 
 const styles = StyleSheet.create({
   page: {
-    padding: 30,
-    fontFamily: 'Helvetica',
-    width: '100%',
-    maxWidth: 500
+    padding: 0,
+    fontFamily: 'Helvetica'
   },
   header: {
     backgroundColor: '#1E40AF',
     padding: 20,
-    marginBottom: 20,
-    borderRadius: 4,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start'
@@ -48,17 +44,17 @@ const styles = StyleSheet.create({
   },
   companyRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: 4
   },
-  companyName: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    marginRight: 12
-  },
-  companyCnpj: {
+  companyLabel: {
     color: '#93C5FD',
-    fontSize: 12
+    fontSize: 12,
+    width: 80
+  },
+  companyValue: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    flex: 1
   },
   dateTimeDivider: {
     borderTopWidth: 1,
@@ -70,9 +66,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between'
   },
-  dateTimeText: {
+  dateTimeLabel: {
     color: '#93C5FD',
+    fontSize: 10,
+    marginRight: 4
+  },
+  dateTimeValue: {
+    color: '#FFFFFF',
     fontSize: 10
+  },
+  content: {
+    padding: 20
   },
   section: {
     marginBottom: 15,
@@ -142,79 +146,91 @@ const ProLaborePDF = ({ fields, groupedFields, companyName, cnpj }: {
           <Text style={styles.headerTitle}>Relatório de Pró-labore</Text>
           <View style={styles.companyInfo}>
             <View style={styles.companyRow}>
-              <Text style={styles.companyName}>{companyName || 'Nome da Empresa'}</Text>
-              <Text style={styles.companyCnpj}>{cnpj || '00.000.000/0001-00'}</Text>
+              <Text style={styles.companyLabel}>Empresa:</Text>
+              <Text style={styles.companyValue}>{companyName || 'Nome da Empresa'}</Text>
+            </View>
+            <View style={styles.companyRow}>
+              <Text style={styles.companyLabel}>CNPJ:</Text>
+              <Text style={styles.companyValue}>{cnpj || '00.000.000/0001-00'}</Text>
             </View>
           </View>
           <View style={styles.dateTimeDivider}>
             <View style={styles.dateTimeRow}>
-              <Text style={styles.dateTimeText}>
-                {new Date().toLocaleDateString('pt-BR')}
-              </Text>
-              <Text style={styles.dateTimeText}>
-                {new Date().toLocaleTimeString('pt-BR')}
-              </Text>
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={styles.dateTimeLabel}>Data:</Text>
+                <Text style={styles.dateTimeValue}>
+                  {new Date().toLocaleDateString('pt-BR')}
+                </Text>
+              </View>
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={styles.dateTimeLabel}>Horário:</Text>
+                <Text style={styles.dateTimeValue}>
+                  {new Date().toLocaleTimeString('pt-BR')}
+                </Text>
+              </View>
             </View>
           </View>
         </View>
         <View style={styles.headerLogo} />
       </View>
 
-      <View style={styles.analysis}>
-        <Text style={styles.analysisTitle}>Análise e Recomendações</Text>
-        <View style={styles.row}>
-          <Text style={styles.label}>Pró-labore Recomendado:</Text>
-          <Text style={styles.value}>R$ 0,00</Text>
+      <View style={styles.content}>
+        <View style={styles.analysis}>
+          <Text style={styles.analysisTitle}>Análise e Recomendações</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Pró-labore Recomendado:</Text>
+            <Text style={styles.value}>R$ 0,00</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Pró-labore Máximo:</Text>
+            <Text style={styles.value}>R$ 0,00</Text>
+          </View>
         </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Pró-labore Máximo:</Text>
-          <Text style={styles.value}>R$ 0,00</Text>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Faturamento</Text>
+          {groupedFields['faturamento']?.filter(f => f.enabled).map((field) => (
+            <View key={field.id} style={styles.row}>
+              <Text style={styles.label}>{field.label}:</Text>
+              <Text style={styles.value}>
+                {field.type === 'currency' ? 'R$ 0,00' :
+                 field.type === 'number' ? '0,00%' :
+                 field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
+                 'Exemplo'}
+              </Text>
+            </View>
+          ))}
         </View>
-      </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Faturamento</Text>
-        {groupedFields['faturamento']?.filter(f => f.enabled).map((field) => (
-          <View key={field.id} style={styles.row}>
-            <Text style={styles.label}>{field.label}:</Text>
-            <Text style={styles.value}>
-              {field.type === 'currency' ? 'R$ 0,00' :
-               field.type === 'number' ? '0,00%' :
-               field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
-               'Exemplo'}
-            </Text>
-          </View>
-        ))}
-      </View>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Custos Fixos</Text>
+          {groupedFields['custos_fixos']?.filter(f => f.enabled).map((field) => (
+            <View key={field.id} style={styles.row}>
+              <Text style={styles.label}>{field.label}:</Text>
+              <Text style={styles.value}>
+                {field.type === 'currency' ? 'R$ 0,00' :
+                 field.type === 'number' ? '0,00%' :
+                 field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
+                 'Exemplo'}
+              </Text>
+            </View>
+          ))}
+        </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Custos Fixos</Text>
-        {groupedFields['custos_fixos']?.filter(f => f.enabled).map((field) => (
-          <View key={field.id} style={styles.row}>
-            <Text style={styles.label}>{field.label}:</Text>
-            <Text style={styles.value}>
-              {field.type === 'currency' ? 'R$ 0,00' :
-               field.type === 'number' ? '0,00%' :
-               field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
-               'Exemplo'}
-            </Text>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Custos Variáveis</Text>
-        {groupedFields['custos_variaveis']?.filter(f => f.enabled).map((field) => (
-          <View key={field.id} style={styles.row}>
-            <Text style={styles.label}>{field.label}:</Text>
-            <Text style={styles.value}>
-              {field.type === 'currency' ? 'R$ 0,00' :
-               field.type === 'number' ? '0,00%' :
-               field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
-               'Exemplo'}
-            </Text>
-          </View>
-        ))}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Custos Variáveis</Text>
+          {groupedFields['custos_variaveis']?.filter(f => f.enabled).map((field) => (
+            <View key={field.id} style={styles.row}>
+              <Text style={styles.label}>{field.label}:</Text>
+              <Text style={styles.value}>
+                {field.type === 'currency' ? 'R$ 0,00' :
+                 field.type === 'number' ? '0,00%' :
+                 field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
+                 'Exemplo'}
+              </Text>
+            </View>
+          ))}
+        </View>
       </View>
 
       <Text style={styles.footer}>
@@ -375,19 +391,29 @@ export default function ProLaboreTemplate() {
         <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
           <div className="p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Pré-visualização</h3>
-            <div className="relative bg-white border border-gray-200 rounded-lg shadow-sm" style={{ height: '842px', width: '595px', transform: 'scale(0.7)', transformOrigin: 'top left' }}>
+            <div className="relative bg-white" style={{ height: '842px', width: '595px', transform: 'scale(0.7)', transformOrigin: 'top left' }}>
               <div className="bg-blue-600 p-5 flex justify-between items-start">
                 <div className="flex-1">
                   <h1 className="text-xl font-bold text-white mb-4">Relatório de Pró-labore</h1>
                   <div className="space-y-1">
-                    <div className="flex items-center space-x-4">
-                      <p className="font-medium text-white">{companyName || 'Nome da Empresa'}</p>
-                      <p className="text-blue-200">{cnpj || '00.000.000/0001-00'}</p>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-blue-200">Empresa:</span>
+                      <span className="font-medium text-white">{companyName || 'Nome da Empresa'}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-blue-200">CNPJ:</span>
+                      <span className="font-medium text-white">{cnpj || '00.000.000/0001-00'}</span>
                     </div>
                     <div className="pt-4 mt-4 border-t border-blue-400">
-                      <div className="flex justify-between text-blue-200 text-sm">
-                        <span>{new Date().toLocaleDateString('pt-BR')}</span>
-                        <span>{new Date().toLocaleTimeString('pt-BR')}</span>
+                      <div className="flex justify-between text-sm">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-blue-200">Data:</span>
+                          <span className="text-white">{new Date().toLocaleDateString('pt-BR')}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-blue-200">Horário:</span>
+                          <span className="text-white">{new Date().toLocaleTimeString('pt-BR')}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
