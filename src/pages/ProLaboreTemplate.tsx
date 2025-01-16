@@ -32,11 +32,12 @@ const styles = StyleSheet.create({
     height: 60,
     backgroundColor: '#FFFFFF',
     borderRadius: 4,
-    marginLeft: 20
+    marginLeft: 20,
+    marginBottom: 20
   },
   headerTitle: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 24,
     marginBottom: 12
   },
   companyInfo: {
@@ -48,12 +49,12 @@ const styles = StyleSheet.create({
   },
   companyLabel: {
     color: '#93C5FD',
-    fontSize: 12,
+    fontSize: 14,
     width: 80
   },
   companyValue: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 14,
     flex: 1
   },
   dateTimeDivider: {
@@ -68,12 +69,12 @@ const styles = StyleSheet.create({
   },
   dateTimeLabel: {
     color: '#93C5FD',
-    fontSize: 10,
+    fontSize: 12,
     marginRight: 4
   },
   dateTimeValue: {
     color: '#FFFFFF',
-    fontSize: 10
+    fontSize: 12
   },
   content: {
     padding: 20
@@ -85,7 +86,7 @@ const styles = StyleSheet.create({
     borderRadius: 4
   },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#1E293B',
     marginBottom: 8,
     borderBottomWidth: 1,
@@ -98,12 +99,12 @@ const styles = StyleSheet.create({
     marginBottom: 4
   },
   label: {
-    fontSize: 9,
+    fontSize: 12,
     color: '#64748B',
     flex: 1
   },
   value: {
-    fontSize: 9,
+    fontSize: 12,
     color: '#1E293B',
     flex: 1,
     textAlign: 'right'
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
     borderRadius: 4
   },
   analysisTitle: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#1E40AF',
     marginBottom: 8
   },
@@ -126,18 +127,19 @@ const styles = StyleSheet.create({
     right: 30,
     textAlign: 'center',
     color: '#94A3B8',
-    fontSize: 8,
+    fontSize: 10,
     paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: '#E2E8F0'
   }
 });
 
-const ProLaborePDF = ({ fields, groupedFields, companyName, cnpj }: { 
+const ProLaborePDF = ({ fields, groupedFields, companyName, cnpj, lastCalculation }: { 
   fields: TemplateField[], 
   groupedFields: Record<string, TemplateField[]>,
   companyName: string,
-  cnpj: string
+  cnpj: string,
+  lastCalculation: any
 }) => (
   <Document>
     <Page size="A4" style={styles.page}>
@@ -162,10 +164,17 @@ const ProLaborePDF = ({ fields, groupedFields, companyName, cnpj }: {
                   {new Date().toLocaleDateString('pt-BR')}
                 </Text>
               </View>
+            </View>
+            <View style={[styles.dateTimeRow, { marginTop: 4 }]}>
               <View style={{ flexDirection: 'row' }}>
                 <Text style={styles.dateTimeLabel}>Horário:</Text>
                 <Text style={styles.dateTimeValue}>
-                  {new Date().toLocaleTimeString('pt-BR')}
+                  {new Date().toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false
+                  })}
                 </Text>
               </View>
             </View>
@@ -179,11 +188,27 @@ const ProLaborePDF = ({ fields, groupedFields, companyName, cnpj }: {
           <Text style={styles.analysisTitle}>Análise e Recomendações</Text>
           <View style={styles.row}>
             <Text style={styles.label}>Pró-labore Recomendado:</Text>
-            <Text style={styles.value}>R$ 0,00</Text>
+            <Text style={styles.value}>
+              {lastCalculation ? 
+                (lastCalculation.maximumRecommended * 0.7).toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL'
+                }) : 
+                'R$ 0,00'
+              }
+            </Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>Pró-labore Máximo:</Text>
-            <Text style={styles.value}>R$ 0,00</Text>
+            <Text style={styles.value}>
+              {lastCalculation ? 
+                lastCalculation.maximumRecommended.toLocaleString('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL'
+                }) : 
+                'R$ 0,00'
+              }
+            </Text>
           </View>
         </View>
 
@@ -193,10 +218,16 @@ const ProLaborePDF = ({ fields, groupedFields, companyName, cnpj }: {
             <View key={field.id} style={styles.row}>
               <Text style={styles.label}>{field.label}:</Text>
               <Text style={styles.value}>
-                {field.type === 'currency' ? 'R$ 0,00' :
-                 field.type === 'number' ? '0,00%' :
-                 field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
-                 'Exemplo'}
+                {lastCalculation?.revenue?.[field.id] ?
+                  lastCalculation.revenue[field.id].toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                  }) :
+                  field.type === 'currency' ? 'R$ 0,00' :
+                  field.type === 'number' ? '0,00%' :
+                  field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
+                  'Exemplo'
+                }
               </Text>
             </View>
           ))}
@@ -208,10 +239,16 @@ const ProLaborePDF = ({ fields, groupedFields, companyName, cnpj }: {
             <View key={field.id} style={styles.row}>
               <Text style={styles.label}>{field.label}:</Text>
               <Text style={styles.value}>
-                {field.type === 'currency' ? 'R$ 0,00' :
-                 field.type === 'number' ? '0,00%' :
-                 field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
-                 'Exemplo'}
+                {lastCalculation?.fixedCosts?.[field.id] ?
+                  lastCalculation.fixedCosts[field.id].toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                  }) :
+                  field.type === 'currency' ? 'R$ 0,00' :
+                  field.type === 'number' ? '0,00%' :
+                  field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
+                  'Exemplo'
+                }
               </Text>
             </View>
           ))}
@@ -223,10 +260,13 @@ const ProLaborePDF = ({ fields, groupedFields, companyName, cnpj }: {
             <View key={field.id} style={styles.row}>
               <Text style={styles.label}>{field.label}:</Text>
               <Text style={styles.value}>
-                {field.type === 'currency' ? 'R$ 0,00' :
-                 field.type === 'number' ? '0,00%' :
-                 field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
-                 'Exemplo'}
+                {lastCalculation?.variableCosts?.[field.id] ?
+                  `${lastCalculation.variableCosts[field.id].toFixed(2)}%` :
+                  field.type === 'currency' ? 'R$ 0,00' :
+                  field.type === 'number' ? '0,00%' :
+                  field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
+                  'Exemplo'
+                }
               </Text>
             </View>
           ))}
@@ -242,27 +282,31 @@ const ProLaborePDF = ({ fields, groupedFields, companyName, cnpj }: {
 
 export default function ProLaboreTemplate() {
   const [fields, setFields] = useState<TemplateField[]>([
-    { id: '1', label: 'Receita com Serviços', type: 'currency', required: true, enabled: true, group: 'faturamento' },
-    { id: '2', label: 'Receita com Produtos', type: 'currency', required: true, enabled: true, group: 'faturamento' },
-    { id: '3', label: 'Outras Receitas', type: 'currency', required: true, enabled: true, group: 'faturamento' },
-    { id: '4', label: 'Custos Mensais', type: 'currency', required: true, enabled: true, group: 'custos_fixos' },
-    { id: '5', label: 'Pró-labore Atual', type: 'currency', required: true, enabled: true, group: 'custos_fixos' },
-    { id: '6', label: 'Custo da Mercadoria (%)', type: 'number', required: true, enabled: true, group: 'custos_variaveis' },
-    { id: '7', label: 'Impostos (%)', type: 'number', required: true, enabled: true, group: 'custos_variaveis' },
-    { id: '8', label: 'Taxas de Cartão (%)', type: 'number', required: true, enabled: true, group: 'custos_variaveis' },
-    { id: '9', label: 'Devoluções (%)', type: 'number', required: true, enabled: true, group: 'custos_variaveis' },
-    { id: '10', label: 'Comissões (%)', type: 'number', required: true, enabled: true, group: 'custos_variaveis' },
-    { id: '11', label: 'Outros Custos (%)', type: 'number', required: true, enabled: true, group: 'custos_variaveis' }
+    { id: 'services', label: 'Receita com Serviços', type: 'currency', required: true, enabled: true, group: 'faturamento' },
+    { id: 'products', label: 'Receita com Produtos', type: 'currency', required: true, enabled: true, group: 'faturamento' },
+    { id: 'others', label: 'Outras Receitas', type: 'currency', required: true, enabled: true, group: 'faturamento' },
+    { id: 'monthly', label: 'Custos Mensais', type: 'currency', required: true, enabled: true, group: 'custos_fixos' },
+    { id: 'proLabore', label: 'Pró-labore Atual', type: 'currency', required: true, enabled: true, group: 'custos_fixos' },
+    { id: 'sales', label: 'Custo da Mercadoria (%)', type: 'number', required: true, enabled: true, group: 'custos_variaveis' },
+    { id: 'taxes', label: 'Impostos (%)', type: 'number', required: true, enabled: true, group: 'custos_variaveis' },
+    { id: 'cardFees', label: 'Taxas de Cartão (%)', type: 'number', required: true, enabled: true, group: 'custos_variaveis' },
+    { id: 'returns', label: 'Devoluções (%)', type: 'number', required: true, enabled: true, group: 'custos_variaveis' },
+    { id: 'commission', label: 'Comissões (%)', type: 'number', required: true, enabled: true, group: 'custos_variaveis' },
+    { id: 'others', label: 'Outros Custos (%)', type: 'number', required: true, enabled: true, group: 'custos_variaveis' }
   ]);
   const [showNotification, setShowNotification] = useState(false);
   const [companyName, setCompanyName] = useState('');
   const [cnpj, setCnpj] = useState('');
+  const [lastCalculation, setLastCalculation] = useState<any>(null);
 
   useEffect(() => {
     const savedCompanyName = localStorage.getItem('companyName');
     const savedCnpj = localStorage.getItem('cnpj');
+    const savedCalculation = localStorage.getItem('lastProLaboreCalculation');
+    
     if (savedCompanyName) setCompanyName(savedCompanyName);
     if (savedCnpj) setCnpj(savedCnpj);
+    if (savedCalculation) setLastCalculation(JSON.parse(savedCalculation));
   }, []);
 
   const handleToggleField = (id: string) => {
@@ -373,7 +417,15 @@ export default function ProLaboreTemplate() {
               </button>
 
               <PDFDownloadLink
-                document={<ProLaborePDF fields={fields} groupedFields={groupedFields} companyName={companyName} cnpj={cnpj} />}
+                document={
+                  <ProLaborePDF 
+                    fields={fields} 
+                    groupedFields={groupedFields} 
+                    companyName={companyName} 
+                    cnpj={cnpj}
+                    lastCalculation={lastCalculation}
+                  />
+                }
                 fileName="relatorio-pro-labore.pdf"
                 className="flex-1 inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
               >
@@ -405,14 +457,21 @@ export default function ProLaboreTemplate() {
                       <span className="font-medium text-white">{cnpj || '00.000.000/0001-00'}</span>
                     </div>
                     <div className="pt-4 mt-4 border-t border-blue-400">
-                      <div className="flex justify-between text-sm">
+                      <div className="flex flex-col space-y-2">
                         <div className="flex items-center space-x-2">
                           <span className="text-blue-200">Data:</span>
                           <span className="text-white">{new Date().toLocaleDateString('pt-BR')}</span>
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className="text-blue-200">Horário:</span>
-                          <span className="text-white">{new Date().toLocaleTimeString('pt-BR')}</span>
+                          <span className="text-white">
+                            {new Date().toLocaleTimeString('pt-BR', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit',
+                              hour12: false
+                            })}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -429,11 +488,27 @@ export default function ProLaboreTemplate() {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">Pró-labore Recomendado:</span>
-                      <span className="font-bold text-blue-600">R$ 0,00</span>
+                      <span className="font-bold text-blue-600">
+                        {lastCalculation ? 
+                          (lastCalculation.maximumRecommended * 0.7).toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL'
+                          }) : 
+                          'R$ 0,00'
+                        }
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">Pró-labore Máximo:</span>
-                      <span className="font-bold text-blue-600">R$ 0,00</span>
+                      <span className="font-bold text-blue-600">
+                        {lastCalculation ? 
+                          lastCalculation.maximumRecommended.toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL'
+                          }) : 
+                          'R$ 0,00'
+                        }
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -449,10 +524,19 @@ export default function ProLaboreTemplate() {
                           <div key={field.id} className="flex justify-between items-center text-sm">
                             <span className="text-gray-600">{field.label}:</span>
                             <span className="font-medium">
-                              {field.type === 'currency' ? 'R$ 0,00' :
-                               field.type === 'number' ? '0,00%' :
-                               field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
-                               'Exemplo'}
+                              {lastCalculation?.[group === 'faturamento' ? 'revenue' : 
+                                              group === 'custos_fixos' ? 'fixedCosts' : 
+                                              'variableCosts']?.[field.id] ?
+                                (group === 'custos_variaveis' ? 
+                                  `${lastCalculation.variableCosts[field.id].toFixed(2)}%` :
+                                  lastCalculation[group === 'faturamento' ? 'revenue' : 'fixedCosts'][field.id]
+                                    .toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                                ) :
+                                field.type === 'currency' ? 'R$ 0,00' :
+                                field.type === 'number' ? '0,00%' :
+                                field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
+                                'Exemplo'
+                              }
                             </span>
                           </div>
                         ))}
