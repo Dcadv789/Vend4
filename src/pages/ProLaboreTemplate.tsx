@@ -571,31 +571,8 @@ function ProLaboreTemplate() {
             <div className="p-6">
               <div className="space-y-4 text-gray-700">
                 <p>
-                  O cálculo do pró-labore é uma etapa crucial para a saúde financeira da sua empresa. 
-                  Considere os seguintes pontos ao definir os valores:
+                  O cálculo do pró-labore é uma etapa crucial para a saúde financeira da sua empresa. Para um resultado mais assertivo, utilize a média dos últimos 6 meses para preencher as informações, com exceção dos custos variáveis, os quais você deve alterar conforme houver mudança nos contratos.
                 </p>
-                <ul className="list-disc pl-5 space-y-2">
-                  <li>
-                    <span className="font-medium">Faturamento Consistente:</span> Utilize a média dos 
-                    últimos 6 meses para uma análise mais precisa.
-                  </li>
-                  <li>
-                    <span className="font-medium">Custos Variáveis:</span> Mantenha os percentuais 
-                    sempre atualizados conforme as mudanças no mercado.
-                  </li>
-                  <li>
-                    <span className="font-medium">Reserva Financeira:</span> Recomenda-se manter uma 
-                    reserva equivalente a 12 meses dos custos fixos.
-                  </li>
-                  <li>
-                    <span className="font-medium">Sazonalidade:</span> Considere os períodos de alta 
-                    e baixa nas suas projeções de receita.
-                  </li>
-                  <li>
-                    <span className="font-medium">Investimentos:</span> Reserve uma parte do lucro 
-                    para reinvestimento no negócio.
-                  </li>
-                </ul>
                 <p className="text-sm text-gray-500 mt-4">
                   Lembre-se: Um pró-labore bem calculado garante a sustentabilidade do seu negócio 
                   a longo prazo e permite um crescimento saudável da empresa.
