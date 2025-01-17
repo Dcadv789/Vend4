@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Save, Plus, Trash2, ToggleLeft, ToggleRight, FileDown, Building2 } from 'lucide-react';
-import { Document, Page, Text, View, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
+import { Save, FileDown, Building2, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, Svg, Path, Defs, ClipPath, G } from '@react-pdf/renderer';
 import { Notification } from '../components/Notification';
 
 interface TemplateField {
@@ -19,106 +19,178 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#1E40AF',
-    padding: 20,
+    padding: 22,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start'
+    alignItems: 'flex-start',
+    position: 'relative'
   },
   headerContent: {
-    flex: 1
-  },
-  headerLogo: {
-    width: 60,
-    height: 60,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 4,
-    marginLeft: 20,
-    marginBottom: 20
+    flex: 1,
+    marginRight: 100
   },
   headerTitle: {
     color: '#FFFFFF',
     fontSize: 24,
     marginBottom: 12
   },
-  companyInfo: {
-    marginBottom: 12
-  },
-  companyRow: {
+  headerRow: {
     flexDirection: 'row',
-    marginBottom: 4
+    justifyContent: 'flex-start',
+    marginBottom: 12,
+    gap: 20,
+    position: 'relative',
+    top: 15
   },
-  companyLabel: {
-    color: '#93C5FD',
-    fontSize: 14,
-    width: 80
-  },
-  companyValue: {
-    color: '#FFFFFF',
-    fontSize: 14,
+  headerColumn: {
     flex: 1
   },
-  dateTimeDivider: {
-    borderTopWidth: 1,
-    borderTopColor: '#93C5FD',
-    marginTop: 8,
-    paddingTop: 8
-  },
-  dateTimeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between'
-  },
-  dateTimeLabel: {
+  headerLabel: {
     color: '#93C5FD',
-    fontSize: 12,
-    marginRight: 4
+    fontSize: 10,
+    marginBottom: 2
   },
-  dateTimeValue: {
+  headerValue: {
     color: '#FFFFFF',
-    fontSize: 12
+    fontSize: 14,
+    fontWeight: 'bold'
+  },
+  headerDateLabel: {
+    color: '#93C5FD',
+    fontSize: 8,
+    marginBottom: 2
+  },
+  headerDateValue: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: 'bold'
+  },
+  headerDivider: {
+    position: 'absolute',
+    left: 20,
+    right: 20,
+    bottom: 36,
+    borderBottomWidth: 1,
+    borderBottomColor: '#93C5FD',
+    opacity: 0.3,
+    marginBottom: 12
+  },
+  headerLogo: {
+    position: 'absolute',
+    right: 20,
+    top: 20,
+    width: 80,
+    height: 80,
+    zIndex: 1
   },
   content: {
-    padding: 20
+    padding: 30
   },
   section: {
-    marginBottom: 15,
-    backgroundColor: '#F8FAFC',
-    padding: 12,
+    marginBottom: 5,
+    backgroundColor: '#FFFFFF',
+    padding: 3,
     borderRadius: 4
   },
   sectionTitle: {
     fontSize: 16,
-    color: '#1E293B',
+    color: '#1e293b',
     marginBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
-    paddingBottom: 4
+    borderBottomColor: '#93c5fd',
+    paddingBottom: 8
   },
   row: {
+    marginBottom: 8
+  },
+  rowItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 4
+    marginBottom: 4,
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 2
   },
   label: {
     fontSize: 12,
-    color: '#64748B',
-    flex: 1
+    color: '#64748B'
   },
   value: {
     fontSize: 12,
     color: '#1E293B',
-    flex: 1,
-    textAlign: 'right'
+    fontWeight: 'bold'
   },
   analysis: {
-    backgroundColor: '#EFF6FF',
     padding: 12,
     marginBottom: 15,
     borderRadius: 4
   },
+  analysisGreen: {
+    backgroundColor: '#DCFCE7',
+  },
+  analysisYellow: {
+    backgroundColor: '#FEF9C3',
+  },
+  analysisRed: {
+    backgroundColor: '#FEE2E2',
+  },
+  analysisHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  analysisIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 8,
+  },
   analysisTitle: {
+    fontSize: 18,
+    marginBottom: 8,
+    fontWeight: 'bold'
+  },
+  analysisTitleGreen: {
+    color: '#166534',
+  },
+  analysisTitleYellow: {
+    color: '#854D0E',
+  },
+  analysisTitleRed: {
+    color: '#991B1B',
+  },
+  analysisText: {
+    fontSize: 14,
+    marginBottom: 16,
+    lineHeight: 1.4
+  },
+  analysisTextGreen: {
+    color: '#166534',
+  },
+  analysisTextYellow: {
+    color: '#854D0E',
+  },
+  analysisTextRed: {
+    color: '#991B1B',
+  },
+  valuesGrid: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+  },
+  valueBox: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    padding: 8,
+    borderRadius: 4,
+  },
+  valueLabel: {
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  valueAmount: {
     fontSize: 16,
-    color: '#1E40AF',
-    marginBottom: 8
+    fontWeight: 'bold',
   },
   footer: {
     position: 'absolute',
@@ -140,36 +212,78 @@ const ProLaborePDF = ({ fields, groupedFields, companyName, cnpj, lastCalculatio
   companyName: string,
   cnpj: string,
   lastCalculation: any
-}) => (
-  <Document>
-    <Page size="A4" style={styles.page}>
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Relatório de Pró-labore</Text>
-          <View style={styles.companyInfo}>
-            <View style={styles.companyRow}>
-              <Text style={styles.companyLabel}>Empresa:</Text>
-              <Text style={styles.companyValue}>{companyName || 'Nome da Empresa'}</Text>
+}) => {
+  const getDiagnosisInfo = (current: number, recommended: number, maximum: number) => {
+    if (current <= recommended) {
+      return {
+        text: 'O valor atual do pró-labore está adequado à realidade financeira da empresa',
+        color: 'green',
+        icon: 'trending-up'
+      };
+    }
+    
+    if (current <= maximum) {
+      return {
+        text: `O valor atual do Pró-labore está adequado à realidade financeira da empresa, mas próximo do limite, o que é arriscado. Garanta uma reserva financeira mínima de ${(lastCalculation?.monthlyFixedCosts * 12).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`,
+        color: 'yellow',
+        icon: 'static'
+      };
+    }
+    
+    return {
+      text: 'Considere ajustar o valor do pró-labore para garantir a saúde financeira da empresa',
+      color: 'red',
+      icon: 'trending-down'
+    };
+  };
+
+  const diagnosis = getDiagnosisInfo(
+    lastCalculation?.currentProLabore || 0,
+    (lastCalculation?.maximumRecommended || 0) * 0.7,
+    lastCalculation?.maximumRecommended || 0
+  );
+
+  const getAnalysisStyle = (color: string) => {
+    return {
+      analysis: [styles.analysis, color === 'green' ? styles.analysisGreen : color === 'yellow' ? styles.analysisYellow : styles.analysisRed],
+      title: [styles.analysisTitle, color === 'green' ? styles.analysisTitleGreen : color === 'yellow' ? styles.analysisTitleYellow : styles.analysisTitleRed],
+      text: [styles.analysisText, color === 'green' ? styles.analysisTextGreen : color === 'yellow' ? styles.analysisTextYellow : styles.analysisTextRed],
+      valueLabel: [styles.valueLabel, color === 'green' ? styles.analysisTitleGreen : color === 'yellow' ? styles.analysisTitleYellow : styles.analysisTitleRed],
+      valueAmount: [styles.valueAmount, color === 'green' ? styles.analysisTitleGreen : color === 'yellow' ? styles.analysisTitleYellow : styles.analysisTitleRed]
+    };
+  };
+
+  const analysisStyle = getAnalysisStyle(diagnosis.color);
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <Text style={styles.headerTitle}>Relatório de Pró-labore</Text>
+            
+            <View style={styles.headerRow}>
+              <View style={styles.headerColumn}>
+                <Text style={styles.headerLabel}>Empresa</Text>
+                <Text style={styles.headerValue}>{companyName || 'Nome da Empresa'}</Text>
+              </View>
+              <View style={styles.headerColumn}>
+                <Text style={styles.headerLabel}>CNPJ</Text>
+                <Text style={styles.headerValue}>{cnpj || '00.000.000/0001-00'}</Text>
+              </View>
             </View>
-            <View style={styles.companyRow}>
-              <Text style={styles.companyLabel}>CNPJ:</Text>
-              <Text style={styles.companyValue}>{cnpj || '00.000.000/0001-00'}</Text>
-            </View>
-          </View>
-          <View style={styles.dateTimeDivider}>
-            <View style={styles.dateTimeRow}>
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={styles.dateTimeLabel}>Data:</Text>
-                <Text style={styles.dateTimeValue}>
+
+            <View style={styles.headerRow}>
+              <View style={styles.headerColumn}>
+                <Text style={styles.headerDateLabel}>Data</Text>
+                <Text style={styles.headerDateValue}>
                   {new Date().toLocaleDateString('pt-BR')}
                 </Text>
               </View>
-            </View>
-            <View style={[styles.dateTimeRow, { marginTop: 4 }]}>
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={styles.dateTimeLabel}>Horário:</Text>
-                <Text style={styles.dateTimeValue}>
-                  {new Date().toLocaleTimeString('pt-BR', { 
+              <View style={styles.headerColumn}>
+                <Text style={styles.headerDateLabel}>Horário</Text>
+                <Text style={styles.headerDateValue}>
+                  {new Date().toLocaleTimeString('pt-BR', {
                     hour: '2-digit',
                     minute: '2-digit',
                     second: '2-digit',
@@ -179,108 +293,113 @@ const ProLaborePDF = ({ fields, groupedFields, companyName, cnpj, lastCalculatio
               </View>
             </View>
           </View>
+          <Svg style={styles.headerLogo} viewBox="0 0 60 60">
+            <Defs>
+              <ClipPath id="9dbc95d808">
+                <Path d="M 1.207031 7.21875 L 58.957031 7.21875 L 58.957031 52.96875 L 1.207031 52.96875 Z M 1.207031 7.21875" />
+              </ClipPath>
+            </Defs>
+            <G clipPath="url(#9dbc95d808)">
+              <Path fill="#ffffff" d="M 58.625 15.542969 C 57.542969 13.085938 55.605469 9.53125 54.019531 7.21875 C 52.308594 9.972656 49.816406 13.933594 48.246094 16.449219 C 44.011719 23.226562 39.804688 30.019531 35.550781 36.777344 C 33.320312 40.324219 30.179688 42.554688 25.960938 43.203125 C 19.546875 44.1875 13.242188 40.433594 11.1875 34.339844 C 9.050781 28.007812 11.71875 21.121094 17.507812 18.023438 C 23.902344 14.601562 31.660156 16.738281 35.539062 22.996094 C 35.96875 23.691406 36.390625 23.703125 36.808594 23.039062 C 38.042969 21.066406 39.277344 19.09375 40.519531 17.121094 C 41.394531 15.734375 41.417969 15.695312 40.222656 14.488281 C 34.941406 9.164062 28.554688 6.792969 21.101562 7.675781 C 8.878906 9.117188 0.0625 20.542969 1.683594 32.769531 C 3.238281 44.453125 13.320312 52.46875 23.871094 52.246094 C 31.03125 52.175781 36.945312 49.433594 41.453125 43.84375 C 43.527344 41.273438 45.066406 38.332031 46.820312 35.542969 C 50.667969 29.417969 54.488281 23.269531 58.335938 17.136719 C 58.652344 16.632812 58.898438 16.167969 58.625 15.546875 Z M 58.625 15.542969" />
+            </G>
+            <Path fill="#f47400" d="M 23.9375 21.996094 C 19.980469 21.707031 15.953125 25.128906 15.894531 29.914062 C 15.84375 34.269531 19.585938 37.960938 23.925781 37.960938 C 28.273438 37.960938 32.035156 34.273438 31.96875 29.921875 C 31.898438 25.113281 27.917969 21.722656 23.9375 21.996094 Z M 23.9375 21.996094" />
+          </Svg>
+          <View style={styles.headerDivider} />
         </View>
-        <View style={styles.headerLogo} />
-      </View>
 
-      <View style={styles.content}>
-        <View style={styles.analysis}>
-          <Text style={styles.analysisTitle}>Análise e Recomendações</Text>
-          <View style={styles.row}>
-            <Text style={styles.label}>Pró-labore Recomendado:</Text>
-            <Text style={styles.value}>
-              {lastCalculation ? 
-                (lastCalculation.maximumRecommended * 0.7).toLocaleString('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL'
-                }) : 
-                'R$ 0,00'
-              }
-            </Text>
+        <View style={styles.content}>
+          <View style={analysisStyle.analysis}>
+            <View style={styles.analysisHeader}>
+              <Text style={analysisStyle.title}>Análise e Recomendações</Text>
+            </View>
+            <Text style={analysisStyle.text}>{diagnosis.text}</Text>
+
+            <View style={styles.valuesGrid}>
+              <View style={styles.valueBox}>
+                <Text style={analysisStyle.valueLabel}>Pró-labore Atual</Text>
+                <Text style={analysisStyle.valueAmount}>
+                  {lastCalculation ? 
+                    lastCalculation.currentProLabore.toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL'
+                    }) : 
+                    'R$ 0,00'
+                  }
+                </Text>
+              </View>
+              <View style={styles.valueBox}>
+                <Text style={analysisStyle.valueLabel}>Pró-labore Recomendado</Text>
+                <Text style={analysisStyle.valueAmount}>
+                  {lastCalculation ? 
+                    (lastCalculation.maximumRecommended * 0.7).toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL'
+                    }) : 
+                    'R$ 0,00'
+                  }
+                </Text>
+              </View>
+              <View style={styles.valueBox}>
+                <Text style={analysisStyle.valueLabel}>Pró-labore Máximo</Text>
+                <Text style={analysisStyle.valueAmount}>
+                  {lastCalculation ? 
+                    lastCalculation.maximumRecommended.toLocaleString('pt-BR', {
+                      style: 'currency',
+                      currency: 'BRL'
+                    }) : 
+                    'R$ 0,00'
+                  }
+                </Text>
+              </View>
+            </View>
           </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Pró-labore Máximo:</Text>
-            <Text style={styles.value}>
-              {lastCalculation ? 
-                lastCalculation.maximumRecommended.toLocaleString('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL'
-                }) : 
-                'R$ 0,00'
-              }
-            </Text>
-          </View>
-        </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Faturamento</Text>
-          {groupedFields['faturamento']?.filter(f => f.enabled).map((field) => (
-            <View key={field.id} style={styles.row}>
-              <Text style={styles.label}>{field.label}:</Text>
-              <Text style={styles.value}>
-                {lastCalculation?.revenue?.[field.id] ?
-                  lastCalculation.revenue[field.id].toLocaleString('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                  }) :
-                  field.type === 'currency' ? 'R$ 0,00' :
-                  field.type === 'number' ? '0,00%' :
-                  field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
-                  'Exemplo'
-                }
-              </Text>
-            </View>
+          {Object.entries(groupedFields).map(([group, groupFields]) => (
+            groupFields[0].enabled && (
+              <View key={group} style={styles.section}>
+                <Text style={styles.sectionTitle}>
+                  {group === 'faturamento' ? 'Faturamento' :
+                   group === 'custos_fixos' ? 'Custos Fixos' :
+                   'Custos Variáveis'}
+                </Text>
+                <View style={styles.row}>
+                  {groupFields.map((field) => (
+                    <View key={field.id} style={styles.rowItem}>
+                      <Text style={styles.label}>{field.label}:</Text>
+                      <Text style={styles.value}>
+                        {lastCalculation?.[group === 'faturamento' ? 'revenue' : 
+                                        group === 'custos_fixos' ? 'fixedCosts' : 
+                                        'variableCosts']?.[field.id] ?
+                          (group === 'custos_variaveis' ? 
+                            `${lastCalculation.variableCosts[field.id].toFixed(2)}%` :
+                            lastCalculation[group === 'faturamento' ? 'revenue' : 'fixedCosts'][field.id].toLocaleString('pt-BR', {
+                              style: 'currency',
+                              currency: 'BRL'
+                            })
+                          ) :
+                          field.type === 'currency' ? 'R$ 0,00' :
+                          field.type === 'number' ? '0,00%' :
+                          field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
+                          'Exemplo'
+                        }
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )
           ))}
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Custos Fixos</Text>
-          {groupedFields['custos_fixos']?.filter(f => f.enabled).map((field) => (
-            <View key={field.id} style={styles.row}>
-              <Text style={styles.label}>{field.label}:</Text>
-              <Text style={styles.value}>
-                {lastCalculation?.fixedCosts?.[field.id] ?
-                  lastCalculation.fixedCosts[field.id].toLocaleString('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                  }) :
-                  field.type === 'currency' ? 'R$ 0,00' :
-                  field.type === 'number' ? '0,00%' :
-                  field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
-                  'Exemplo'
-                }
-              </Text>
-            </View>
-          ))}
-        </View>
+        <Text style={styles.footer}>
+          Copyright ® 2025 DC ADVISORS - Todos os direitos reservados
+        </Text>
+      </Page>
+    </Document>
+  );
+};
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Custos Variáveis</Text>
-          {groupedFields['custos_variaveis']?.filter(f => f.enabled).map((field) => (
-            <View key={field.id} style={styles.row}>
-              <Text style={styles.label}>{field.label}:</Text>
-              <Text style={styles.value}>
-                {lastCalculation?.variableCosts?.[field.id] ?
-                  `${lastCalculation.variableCosts[field.id].toFixed(2)}%` :
-                  field.type === 'currency' ? 'R$ 0,00' :
-                  field.type === 'number' ? '0,00%' :
-                  field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
-                  'Exemplo'
-                }
-              </Text>
-            </View>
-          ))}
-        </View>
-      </View>
-
-      <Text style={styles.footer}>
-        DC Advisors® - Todos os direitos reservados
-      </Text>
-    </Page>
-  </Document>
-);
-
-export default function ProLaboreTemplate() {
+function ProLaboreTemplate() {
   const [fields, setFields] = useState<TemplateField[]>([
     { id: 'services', label: 'Receita com Serviços', type: 'currency', required: true, enabled: true, group: 'faturamento' },
     { id: 'products', label: 'Receita com Produtos', type: 'currency', required: true, enabled: true, group: 'faturamento' },
@@ -309,27 +428,14 @@ export default function ProLaboreTemplate() {
     if (savedCalculation) setLastCalculation(JSON.parse(savedCalculation));
   }, []);
 
-  const handleToggleField = (id: string) => {
+  const handleToggleGroup = (group: string) => {
     setFields(fields.map(field => 
-      field.id === id ? { ...field, enabled: !field.enabled } : field
+      field.group === group ? { ...field, enabled: !field.enabled } : field
     ));
   };
 
   const handleSaveTemplate = () => {
     setShowNotification(true);
-  };
-
-  const getFieldIcon = (type: string) => {
-    switch (type) {
-      case 'currency':
-        return '💰';
-      case 'number':
-        return '📊';
-      case 'date':
-        return '📅';
-      default:
-        return '📝';
-    }
   };
 
   const groupedFields = fields.reduce((acc, field) => {
@@ -353,18 +459,6 @@ export default function ProLaboreTemplate() {
     }
   };
 
-  const formatCurrency = (value: number) => {
-    return value.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    });
-  };
-
-  const getTotalRevenue = () => {
-    if (!lastCalculation?.revenue) return 0;
-    return Object.values(lastCalculation.revenue).reduce((a: number, b: number) => a + b, 0);
-  };
-
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       {showNotification && (
@@ -379,12 +473,77 @@ export default function ProLaboreTemplate() {
           Template de Pró-labore
         </h1>
         <p className="text-blue-100">
-          Configure os campos que serão exibidos no relatório de pró-labore
+          Configure os grupos de informações que serão exibidos no relatório de pró-labore
         </p>
       </div>
 
       <div className="grid grid-cols-2 gap-8">
-        <div className="space-y-8">
+        <div className="space-y-6">
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+            <div className="p-6 space-y-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Grupos de Informações
+              </h3>
+              <div className="space-y-4">
+                {Object.entries(groupedFields).map(([group, groupFields]) => (
+                  <div key={group} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-xl">📊</span>
+                      <div>
+                        <p className="font-medium text-gray-900">{getGroupTitle(group)}</p>
+                        <p className="text-sm text-gray-500">
+                          {groupFields.length} campos disponíveis
+                        </p>
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={groupFields[0].enabled}
+                        onChange={() => handleToggleGroup(group)}
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-4 pt-6">
+                <button
+                  onClick={handleSaveTemplate}
+                  className="flex-1 inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <Save size={20} className="mr-2" />
+                  Salvar Template
+                </button>
+
+                <PDFDownloadLink
+                  document={
+                    <ProLaborePDF 
+                      fields={fields} 
+                      groupedFields={groupedFields} 
+                      companyName={companyName} 
+                      cnpj={cnpj}
+                      lastCalculation={lastCalculation}
+                    />
+                  }
+                  fileName="relatorio-pro-labore.pdf"
+                  className="flex-1 inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                >
+                  {({ loading }) => (
+                    <>
+                      <FileDown size={20} className="mr-2" />
+                      {loading ? 'Gerando PDF...' : 'Exportar PDF'}
+                    </>
+                  )}
+                </PDFDownloadLink>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-6">
           {lastCalculation && (
             <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
               <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
@@ -401,190 +560,46 @@ export default function ProLaboreTemplate() {
                     <span className="font-medium text-gray-900">{cnpj || 'Não informado'}</span>
                   </div>
                 </div>
-                <div className="border-t border-gray-200 pt-4 space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Faturamento Total:</span>
-                    <span className="font-medium text-gray-900">{formatCurrency(getTotalRevenue())}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Pró-labore Recomendado:</span>
-                    <span className="font-medium text-green-600">
-                      {formatCurrency(lastCalculation.maximumRecommended * 0.7)}
-                    </span>
-                  </div>
-                </div>
               </div>
             </div>
           )}
 
-          {Object.entries(groupedFields).map(([group, groupFields]) => (
-            <div key={group} className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-              <div className="p-6 space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                  {getGroupTitle(group)}
-                </h3>
-                <div className="space-y-3">
-                  {groupFields.map((field) => (
-                    <div key={field.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 shadow-sm">
-                      <div className="flex items-center space-x-3">
-                        <span className="text-xl">{getFieldIcon(field.type)}</span>
-                        <div>
-                          <p className="font-medium text-gray-900">{field.label}</p>
-                          <p className="text-sm text-gray-500">
-                            {field.type === 'currency' ? 'Valor monetário' : 
-                             field.type === 'number' ? 'Valor numérico' : 
-                             field.type === 'date' ? 'Data' : 'Texto'}
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => handleToggleField(field.id)}
-                        className={`p-2 rounded-lg transition-colors ${
-                          field.enabled ? 'text-green-600 hover:text-green-700' : 'text-gray-400 hover:text-gray-500'
-                        }`}
-                      >
-                        {field.enabled ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+              <h3 className="text-lg font-semibold text-white">Observações Importantes</h3>
             </div>
-          ))}
-
-          <div className="flex gap-4">
-            <button
-              onClick={handleSaveTemplate}
-              className="flex-1 inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <Save size={20} className="mr-2" />
-              Salvar Template
-            </button>
-
-            <PDFDownloadLink
-              document={
-                <ProLaborePDF 
-                  fields={fields} 
-                  groupedFields={groupedFields} 
-                  companyName={companyName} 
-                  cnpj={cnpj}
-                  lastCalculation={lastCalculation}
-                />
-              }
-              fileName="relatorio-pro-labore.pdf"
-              className="flex-1 inline-flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-            >
-              {({ loading }) => (
-                <>
-                  <FileDown size={20} className="mr-2" />
-                  {loading ? 'Gerando PDF...' : 'Exportar PDF'}
-                </>
-              )}
-            </PDFDownloadLink>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Pré-visualização</h3>
-            <div className="relative bg-white" style={{ height: '842px', width: '595px', transform: 'scale(0.7)', transformOrigin: 'top left' }}>
-              <div className="bg-blue-600 p-5 flex justify-between items-start">
-                <div className="flex-1">
-                  <h1 className="text-xl font-bold text-white mb-4">Relatório de Pró-labore</h1>
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-blue-200">Empresa:</span>
-                      <span className="font-medium text-white">{companyName || 'Nome da Empresa'}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-blue-200">CNPJ:</span>
-                      <span className="font-medium text-white">{cnpj || '00.000.000/0001-00'}</span>
-                    </div>
-                    <div className="pt-4 mt-4 border-t border-blue-400">
-                      <div className="flex flex-col space-y-2">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-blue-200">Data:</span>
-                          <span className="text-white">{new Date().toLocaleDateString('pt-BR')}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-blue-200">Horário:</span>
-                          <span className="text-white">
-                            {new Date().toLocaleTimeString('pt-BR', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              second: '2-digit',
-                              hour12: false
-                            })}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center">
-                  <Building2 className="w-10 h-10 text-blue-600" />
-                </div>
-              </div>
-
-              <div className="p-5 space-y-4">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h2 className="text-lg font-bold text-blue-800 mb-2">Análise e Recomendações</h2>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Pró-labore Recomendado:</span>
-                      <span className="font-bold text-blue-600">
-                        {lastCalculation ? 
-                          formatCurrency(lastCalculation.maximumRecommended * 0.7) : 
-                          'R$ 0,00'
-                        }
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Pró-labore Máximo:</span>
-                      <span className="font-bold text-blue-600">
-                        {lastCalculation ? 
-                          formatCurrency(lastCalculation.maximumRecommended) : 
-                          'R$ 0,00'
-                        }
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  {Object.entries(groupedFields).map(([group, groupFields]) => (
-                    <div key={group} className="bg-gray-50 p-4 rounded-lg">
-                      <h3 className="text-sm font-semibold text-blue-800 border-b border-blue-100 pb-2 mb-3">
-                        {getGroupTitle(group)}
-                      </h3>
-                      <div className="space-y-2">
-                        {groupFields.filter(f => f.enabled).map((field) => (
-                          <div key={field.id} className="flex justify-between items-center text-sm">
-                            <span className="text-gray-600">{field.label}:</span>
-                            <span className="font-medium">
-                              {lastCalculation?.[group === 'faturamento' ? 'revenue' : 
-                                              group === 'custos_fixos' ? 'fixedCosts' : 
-                                              'variableCosts']?.[field.id] ?
-                                (group === 'custos_variaveis' ? 
-                                  `${lastCalculation.variableCosts[field.id].toFixed(2)}%` :
-                                  formatCurrency(lastCalculation[group === 'faturamento' ? 'revenue' : 'fixedCosts'][field.id])
-                                ) :
-                                field.type === 'currency' ? 'R$ 0,00' :
-                                field.type === 'number' ? '0,00%' :
-                                field.type === 'date' ? new Date().toLocaleDateString('pt-BR') :
-                                'Exemplo'
-                              }
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="absolute bottom-5 left-0 right-0 text-center text-gray-500 text-xs border-t border-gray-200 pt-4 mx-5">
-                  DC Advisors® - Todos os direitos reservados
-                </div>
+            <div className="p-6">
+              <div className="space-y-4 text-gray-700">
+                <p>
+                  O cálculo do pró-labore é uma etapa crucial para a saúde financeira da sua empresa. 
+                  Considere os seguintes pontos ao definir os valores:
+                </p>
+                <ul className="list-disc pl-5 space-y-2">
+                  <li>
+                    <span className="font-medium">Faturamento Consistente:</span> Utilize a média dos 
+                    últimos 6 meses para uma análise mais precisa.
+                  </li>
+                  <li>
+                    <span className="font-medium">Custos Variáveis:</span> Mantenha os percentuais 
+                    sempre atualizados conforme as mudanças no mercado.
+                  </li>
+                  <li>
+                    <span className="font-medium">Reserva Financeira:</span> Recomenda-se manter uma 
+                    reserva equivalente a 12 meses dos custos fixos.
+                  </li>
+                  <li>
+                    <span className="font-medium">Sazonalidade:</span> Considere os períodos de alta 
+                    e baixa nas suas projeções de receita.
+                  </li>
+                  <li>
+                    <span className="font-medium">Investimentos:</span> Reserve uma parte do lucro 
+                    para reinvestimento no negócio.
+                  </li>
+                </ul>
+                <p className="text-sm text-gray-500 mt-4">
+                  Lembre-se: Um pró-labore bem calculado garante a sustentabilidade do seu negócio 
+                  a longo prazo e permite um crescimento saudável da empresa.
+                </p>
               </div>
             </div>
           </div>
@@ -593,3 +608,5 @@ export default function ProLaboreTemplate() {
     </div>
   );
 }
+
+export default ProLaboreTemplate;
